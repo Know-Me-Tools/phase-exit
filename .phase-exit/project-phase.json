@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "phase": "first-uar-example",
-  "stage": "execute",
-  "boundary": "closed",
+  "stage": "reflect",
+  "boundary": "open",
   "approved_by": "operator instruction: PLEASE IMPLEMENT THIS PLAN, 2026-10-16",
   "tasks": [
     {
@@ -51,19 +51,19 @@
       "id": "REVIEW-1",
       "owner": "independent",
       "deliverable": "isolated completed-artifact review",
-      "status": "complete_with_warning"
+      "status": "complete_at_cap_warning_repaired"
     },
     {
       "id": "ACCEPT-1",
       "owner": "lead",
       "deliverable": "serialized real CLI, JEV, local hook and UAR import acceptance",
-      "status": "failed_calibration"
+      "status": "complete"
     },
     {
       "id": "PUBLISH-1",
       "owner": "lead",
       "deliverable": "public source and usable local skill/plugin packages, truthful receipts",
-      "status": "source_push_authorized_before_use"
+      "status": "fixes_ready_for_push"
     },
     {
       "id": "REPAIR-1",
@@ -87,7 +87,19 @@
       "id": "AMENDMENT-1",
       "owner": "lead",
       "deliverable": "Operator-requested calibration proposal; review only, no adoption",
-      "status": "adopted_mapping_pending"
+      "status": "adopted_implemented"
+    },
+    {
+      "id": "REPAIR-4",
+      "owner": "uar-adapter",
+      "deliverable": "Preserve actual active runner argv after canonical manifest validation",
+      "status": "complete"
+    },
+    {
+      "id": "REPAIR-5",
+      "owner": "team",
+      "deliverable": "Freshness uses captured bytes; bounded diagnostics; UAR-only rerun carries retained passing calibration",
+      "status": "complete"
     }
   ],
   "constraints": {
@@ -99,10 +111,12 @@
     "mcp_implementation": false
   },
   "known_external_blocker": "UAR genuine qualified supervisor setup is unavailable; no release success without its required evidence.",
-  "implementation_inventory": ".phase-exit/implementation-inventory-04.json",
-  "repair_cohort": "calibration-observation-collection",
-  "calibration_status": "ADOPTED_REVISION_UNEVALUATED",
-  "next_authorized_action": "Push README and preview source, implement adopted terminal-receipt calibration mapping, record full inventory, then run only affected gates.",
-  "source_publication": "Operator explicitly authorized preview source push before use; certification remains pending.",
-  "adoption_record": ".phase-exit/adoptions/calibration-terminal-receipts-v2.json"
+  "implementation_inventory": ".phase-exit/implementation-inventory-06.json",
+  "repair_cohort": "real-uar-freshness-and-calibration-carry",
+  "calibration_status": "PASSED_V2_RETAINED_PROOF",
+  "next_authorized_action": "Push completed in-place Phase Exit fixes and receipts; UAR operation WAIT and release BLOCKED with no next action.",
+  "source_publication": "Preview00508d4 already pushed before use; verified in-place repair commit pending push",
+  "adoption_record": ".phase-exit/adoptions/calibration-terminal-receipts-v2.json",
+  "phase_exit_acceptance": "passed_scoped_mac_and_real_uar_application",
+  "completion_receipt": ".phase-exit/acceptance/completion.json"
 }

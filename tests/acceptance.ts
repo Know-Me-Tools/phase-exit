@@ -2,7 +2,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
 import { lstat, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { importUarSnapshot, GROUPS, NATIVE_SUPPLEMENTS, IMAGE_SCENARIOS } from "../packages/uar/index.js";
 
@@ -14,6 +14,14 @@ interface Fixture {
   dir: string; state: string; contractPath: string; evidencePath: string;
   contract: Obj; evidence: Obj; digest: string;
 }
+interface AdoptedCalibration {
+  set: Obj; source: string; fixtureDigest: string; adoptionDigest: string; mappingDigest: string;
+  amendmentDigest: string; rubricVersion: string; question: string;
+}
+interface SemanticObservation {
+  observation: Obj; criterion: string; calibration: AdoptedCalibration;
+}
+interface AdoptionAuthority { reviewer: string; reviewRationale: string; operator: string; rationale: string }
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const project = resolve(root, "..");
 const binary = process.env.PHASE_EXIT_BINARY ?? join(project, "target", "debug", "phase-exit");
@@ -21,6 +29,9 @@ const output = resolve(process.env.PHASE_EXIT_ACCEPTANCE_OUTPUT ?? join(project,
 const cases: CaseReceipt[] = [];
 const commands: Obj[] = [];
 const selectedCases = process.env.PHASE_EXIT_ACCEPTANCE_CASES?.split(",").filter(Boolean);
+const calibrationProofPath = process.env.PHASE_EXIT_CALIBRATION_PROOF;
+let successfulCalibration: AdoptedCalibration | undefined;
+let retainedCalibrationProof: Obj | null = null;
 process.env.PHASE_EXIT_HOOK_RUNNER = join(root, "packages", "hooks", "runner.js");
 const now = (): number => Math.floor(Date.now() / 1000);
 const hash = (bytes: string | Buffer): string => createHash("sha256").update(bytes).digest("hex");
@@ -37,6 +48,111 @@ function text(value: Json | undefined): string {
   return value;
 }
 function expect(value: boolean, detail: string): void { if (!value) throw new Error(detail); }
+function canonical(value: Json): string {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (value !== null && typeof value === "object") return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonical(value[key] ?? null)}`).join(",")}}`;
+  return JSON.stringify(value);
+}
+function sameJson(left: Json | undefined, right: Json | undefined): boolean {
+  return left !== undefined && right !== undefined && canonical(left) === canonical(right);
+}
+async function adoptedCalibration(): Promise<AdoptedCalibration> {
+  const mappingBytes = await readFile(join(project, ".phase-exit", "adoptions", "calibration-terminal-receipts-v2.mapping.json"));
+  const mapping = object(JSON.parse(mappingBytes.toString("utf8")));
+  expect(mapping["schema_version"] === 1 && mapping["kind"] === "adopted_calibration_mapping", "Calibration mapping is not the adopted version1 record");
+  const adoptionPath = ".phase-exit/adoptions/calibration-terminal-receipts-v2.json";
+  const amendmentPath = "docs/amendments/calibration-terminal-receipts-v2.json";
+  const fixturePath = "fixtures/semantic-examples-v2.json";
+  const originalPath = "fixtures/semantic-examples.json";
+  expect(mapping["adoption_record"] === adoptionPath && mapping["amendment_path"] === amendmentPath && mapping["fixture_path"] === fixturePath && mapping["original_fixture_path"] === originalPath, "Calibration mapping references unexpected artifacts");
+  async function bound(path: string, expected: Json | undefined): Promise<Buffer> {
+    const bytes = await readFile(join(project, path));
+    expect(typeof expected === "string" && /^[a-f0-9]{64}$/.test(expected) && hash(bytes) === expected, `Calibration identity mismatch: ${path}`);
+    return bytes;
+  }
+  const adoptionBytes = await bound(adoptionPath, mapping["adoption_sha256"]);
+  const adoption = object(JSON.parse(adoptionBytes.toString("utf8")));
+  const amendmentBytes = await bound(amendmentPath, mapping["amendment_sha256"]);
+  const amendment = object(JSON.parse(amendmentBytes.toString("utf8")));
+  const fixtureBytes = await bound(fixturePath, mapping["fixture_sha256"]);
+  const set = object(JSON.parse(fixtureBytes.toString("utf8")));
+  const originalBytes = await bound(originalPath, mapping["original_fixture_sha256"]);
+  const original = object(JSON.parse(originalBytes.toString("utf8")));
+  expect(adoption["schema_version"] === 1 && adoption["kind"] === "calibration_amendment_adoption" && adoption["amendment_id"] === "calibration-terminal-receipts-v2" && text(adoption["authorization"]).length > 0 && text(adoption["operator"]).length > 0, "Explicit calibration adoption record missing");
+  expect(adoption["amendment_path"] === amendmentPath && adoption["amendment_sha256"] === hash(amendmentBytes), "Adoption does not bind the reviewed amendment");
+  const reviewPath = "docs/amendments/calibration-terminal-receipts-v2.review-2.json";
+  expect(adoption["review_path"] === reviewPath, "Adoption references an unexpected review");
+  const review = object(JSON.parse((await bound(reviewPath, adoption["review_sha256"])).toString("utf8")));
+  expect(review["schema_version"] === 1 && review["amendment_id"] === adoption["amendment_id"] && review["verdict"] === "PROPOSAL_READY_FOR_OPERATOR_REVIEW" && array(review["findings"]).length === 0, "Reviewed calibration amendment has unresolved findings");
+  expect(amendment["schema_version"] === 1 && amendment["id"] === adoption["amendment_id"] && set["schema_version"] === 1 && set["id"] === adoption["amendment_id"], "Calibration amendment/fixture identity differs");
+  for (const record of [adoption, amendment, set]) expect(record["parent_examples_sha256"] === hash(originalBytes), "Original frozen examples identity differs");
+  expect(set["adoption_record"] === adoptionPath && set["adoption_sha256"] === hash(adoptionBytes) && set["amendment_path"] === amendmentPath && set["amendment_sha256"] === hash(amendmentBytes), "Frozen fixture does not bind adopted authority");
+  for (const policy of [adoption, object(amendment["unchanged"]), object(mapping["unchanged"])]) {
+    expect(policy["model"] === "jev-1.14.0" && policy["channel"] === "preview" && policy["support_threshold"] === 0.95 && policy["contradiction_threshold"] === 0.05, "Adopted model/channel/thresholds changed");
+  }
+  for (const policy of [original, set]) expect(policy["model"] === "jev-1.14.0" && policy["model_channel"] === "preview" && policy["support_threshold"] === 0.95 && policy["contradiction_threshold"] === 0.05, "Frozen model/channel/thresholds changed");
+  expect(sameJson(mapping["unchanged"], amendment["unchanged"]), "Mapping changed the adopted unchanged policy");
+  const rubric = object(amendment["proposed_rubric"]);
+  expect(set["rubric_version"] === "terminal-receipts-v2" && set["rubric_version"] === rubric["version"] && set["rubric_question"] === rubric["question"], "Frozen rubric differs from reviewed amendment");
+  expect(sameJson(set["examples"], amendment["examples"]) && sameJson(set["calibration_acceptance"], amendment["calibration_acceptance"]), "Frozen examples or classification rules differ from reviewed amendment");
+  expect(sameJson(mapping["affected_gates"], ["jev-live-frozen-calibration", "real-uar-import"]), "Mapping changed the affected gate set");
+  const examples = array(set["examples"]).map(object);
+  expect(examples.length === 3 && ["supported", "contradicted", "uncertain"].every(id => examples.filter(example => example["id"] === id && example["expected_semantic_outcome"] === id).length === 1), "Calibration requires exactly the three adopted semantic classes");
+  return { set, source: fixtureBytes.toString("utf8"), fixtureDigest: hash(fixtureBytes), adoptionDigest: hash(adoptionBytes), mappingDigest: hash(mappingBytes), amendmentDigest: hash(amendmentBytes), rubricVersion: text(set["rubric_version"]), question: text(set["rubric_question"]) };
+}
+async function retainedCalibration(path: string): Promise<AdoptedCalibration> {
+  expect(isAbsolute(path), "Retained calibration proof path must be absolute");
+  const proofBytes = await readFile(path);
+  const proof = object(JSON.parse(proofBytes.toString("utf8")));
+  expect(proof["schema_version"] === 1 && proof["kind"] === "retained_calibration_pass", "Expected explicit retained calibration proof");
+  async function bound(pathValue: Json | undefined, digest: Json | undefined): Promise<Obj> {
+    const artifactPath = text(pathValue);
+    expect(isAbsolute(artifactPath), "Retained calibration artifact paths must be absolute");
+    const bytes = await readFile(artifactPath);
+    expect(typeof digest === "string" && /^[a-f0-9]{64}$/.test(digest) && hash(bytes) === digest, `Retained calibration artifact identity mismatch: ${artifactPath}`);
+    return object(JSON.parse(bytes.toString("utf8")));
+  }
+  const program = await bound(proof["program_receipt"], proof["program_receipt_sha256"]);
+  const observations = await bound(proof["observations"], proof["observations_sha256"]);
+  expect(output !== dirname(text(proof["program_receipt"])) && output !== dirname(text(proof["observations"])), "Retained calibration requires a new output directory; original receipts must remain unchanged");
+  const binaryDigest = hash(await readFile(binary));
+  expect(proof["binary_sha256"] === binaryDigest && program["binary_sha256"] === binaryDigest, "Retained calibration belongs to a different Rust binary");
+  expect(program["schema_version"] === 1 && (program["status"] === "passed" || program["status"] === "failed"), "Retained calibration program receipt is not terminal");
+  const priorCases = array(program["cases"]).map(object);
+  const calibrationCases = priorCases.filter(item => item["id"] === "jev-live-frozen-calibration");
+  expect(calibrationCases.length === 1 && calibrationCases[0]?.["passed"] === true && priorCases.every(item => typeof item["passed"] === "boolean"), "Original program did not record a passing calibration case");
+  const failedCases = priorCases.filter(item => item["passed"] === false);
+  expect(program["status"] === "passed" ? failedCases.length === 0 : failedCases.length === 1 && failedCases[0]?.["id"] === "real-uar-import", "Original program failed outside the bounded UAR import gate");
+  const calibration = await adoptedCalibration();
+  const identities: Obj = { fixture_sha256: calibration.fixtureDigest, adoption_sha256: calibration.adoptionDigest, mapping_sha256: calibration.mappingDigest, amendment_sha256: calibration.amendmentDigest };
+  for (const [key, digest] of Object.entries(identities)) expect(proof[key] === digest && observations[key] === digest, `Retained calibration changed adopted identity: ${key}`);
+  expect(observations["schema_version"] === 1 && observations["rubric_version"] === calibration.rubricVersion && array(observations["failures"]).length === 0, "Retained observations do not record a successful adopted calibration");
+  const observed = array(observations["observations"]).map(object);
+  const judgments = array(proof["cache_judgments"]).map(object);
+  expect(observed.length === 3 && judgments.length === 3, "Retained calibration requires exactly three original live judgments");
+  for (const example of array(calibration.set["examples"]).map(object)) {
+    const id = text(example["id"]);
+    const matching = observed.filter(item => item["id"] === id);
+    const cached = judgments.filter(item => item["id"] === id);
+    expect(matching.length === 1 && cached.length === 1, `Retained calibration class missing or duplicated: ${id}`);
+    const observation = object(matching[0]);
+    const cache = object(cached[0]);
+    const judgment = await bound(cache["path"], cache["sha256"]);
+    const response = object(judgment["response"]);
+    const answers = object(response["answers"]);
+    const supportAnswer = object(answers["support"]); const contradictionAnswer = object(answers["contradiction"]);
+    const support = observation["support"]; const contradiction = observation["contradiction"];
+    expect(typeof support === "number" && Number.isFinite(support) && support >= 0 && support <= 1 && typeof contradiction === "number" && Number.isFinite(contradiction) && contradiction >= 0 && contradiction <= 1, "Retained calibration probabilities are invalid");
+    expect(judgment["live"] === true && judgment["model"] === "jev-1.14.0" && response["model"] === "jev-1.14.0" && /^[a-f0-9]{64}$/.test(text(observation["request_digest"])) && judgment["request_digest"] === observation["request_digest"], "Retained judgment model, live provenance or request identity differs");
+    expect(Object.keys(answers).length === 2 && supportAnswer["type"] === "noul" && contradictionAnswer["type"] === "noul" && judgment["support"] === support && supportAnswer["noul"] === support && judgment["contradiction"] === contradiction && contradictionAnswer["noul"] === contradiction, "Retained judgment response differs from recorded probabilities");
+    expect(observation["expected"] === example["expected_semantic_outcome"] && observation["decision"] === (id === "supported" ? "COMPLETE" : "REVIEW_REQUIRED"), "Retained semantic class decision differs from adopted example");
+    if (id === "supported") expect(typeof support === "number" && support >= 0.95 && typeof contradiction === "number" && contradiction <= 0.05, "Retained supported class did not pass");
+    else if (id === "contradicted") expect(typeof contradiction === "number" && contradiction >= 0.95, "Retained contradicted class did not pass");
+    else expect(typeof support === "number" && typeof contradiction === "number" && contradiction < 0.95 && !(support >= 0.95 && contradiction <= 0.05), "Retained uncertain class did not pass");
+  }
+  retainedCalibrationProof = { path, sha256: hash(proofBytes), program_receipt: proof["program_receipt"] ?? null, program_receipt_sha256: proof["program_receipt_sha256"] ?? null, observations_sha256: proof["observations_sha256"] ?? null };
+  return calibration;
+}
 async function jsonFile(path: string, value: Json): Promise<string> {
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
@@ -72,23 +188,23 @@ async function one(id: string, work: () => Promise<void>): Promise<void> {
   if (selectedCases && !selectedCases.includes(id)) return;
   try { await work(); cases.push({ id, passed: true, detail: "Observed expected production-path outcome" }); }
   catch (error) { cases.push({ id, passed: false, detail: error instanceof Error ? error.message : "Unknown failure" }); }
-  await jsonFile(join(output, "receipt.json"), { schema_version: 1, status: "running", cases: cases.map(c => ({ ...c })), commands });
+  await jsonFile(join(output, "receipt.json"), { schema_version: 1, status: "running", cases: cases.map(c => ({ ...c })), commands, retained_calibration_proof: retainedCalibrationProof });
   process.stdout.write(`${id}: ${cases.at(-1)?.passed ? "PASS" : "FAIL"}\n`);
 }
-async function adopt(f: Fixture, previous: string | null = null, invalidated: string[] = []): Promise<void> {
+async function adopt(f: Fixture, previous: string | null = null, invalidated: string[] = [], authority: AdoptionAuthority = { reviewer: "bounded-acceptance-fixture", reviewRationale: "Operator approved isolated acceptance fixtures; not UAR adoption", operator: "approved-fixture-program", rationale: "Exercise explicitly approved isolated fixture authority" }): Promise<void> {
   await jsonFile(f.contractPath, f.contract);
   const imported = await cli(["contract", "import", "--contract", f.contractPath, "--state-dir", f.state]);
   f.digest = text(imported["contract_digest"]);
-  const reviewed = await cli(["contract", "freeze", "--contract", f.contractPath, "--reviewer", "bounded-acceptance-fixture", "--rationale", "Operator approved isolated acceptance fixtures; not UAR adoption", "--state-dir", f.state]);
+  const reviewed = await cli(["contract", "freeze", "--contract", f.contractPath, "--reviewer", authority.reviewer, "--rationale", authority.reviewRationale, "--state-dir", f.state]);
   const adoption = await jsonFile(join(f.dir, `adoption-${String(f.contract["revision"])}.json`), {
     schema_version: 1, contract_digest: f.digest, review_digest: reviewed["review_digest"] ?? null,
-    previous_contract_digest: previous, operator: "approved-fixture-program", rationale: "Exercise explicitly approved isolated fixture authority", invalidated_criteria: invalidated,
+    previous_contract_digest: previous, operator: authority.operator, rationale: authority.rationale, invalidated_criteria: invalidated,
   });
   await cli(["contract", "adopt", "--contract", f.contractPath, "--adoption", adoption, "--state-dir", f.state]);
 }
-async function fixture(name: string, options: { publication?: boolean; external?: boolean; semantic?: string; hooks?: Obj; failedCommand?: boolean; repair?: boolean; secondGate?: boolean } = {}): Promise<Fixture> {
+async function fixture(name: string, options: { publication?: boolean; external?: boolean; semantic?: string; semanticObservation?: SemanticObservation; hooks?: Obj; failedCommand?: boolean; repair?: boolean; secondGate?: boolean } = {}): Promise<Fixture> {
   const dir = join(output, name); await mkdir(dir, { recursive: true });
-  const source = join(dir, "approved-plan.md"); await writeFile(source, "Frozen bounded acceptance example approved in the Phase Exit plan.\n");
+  const source = join(dir, "approved-plan.md"); await writeFile(source, options.semanticObservation?.calibration.source ?? "Frozen bounded acceptance example approved in the Phase Exit plan.\n");
   const sourceHash = hash(await readFile(source));
   const implementation = join(dir, "implementation.json"); await jsonFile(implementation, { complete: true });
   const criteria: Json[] = [{ id: "implementation", stage: "implement", description: "Complete fixture implementation artifact", expected_outcome: "All approved implementation exists", source_id: "plan", depends_on: [], predicate: { kind: "file_sha256", sha256: hash(await readFile(implementation)) } }];
@@ -96,7 +212,8 @@ async function fixture(name: string, options: { publication?: boolean; external?
   let predicate: Obj = { kind: "command_success", action_id: "accept-command" };
   if (options.external) predicate = { kind: "external_ready", pointer: "/available" };
   if (options.semantic) predicate = { kind: "semantic", pointer: "/statement", question: "Does the supplied original receipt establish that the command finished successfully with exit code zero?" };
-  criteria.push({ id: "acceptance", stage: "accept", description: "The recorded command finished successfully with exit code zero.", expected_outcome: "A terminal success with exit code zero is observed", source_id: "plan", depends_on: ["implementation"], predicate });
+  if (options.semanticObservation) predicate = { kind: "semantic", pointer: "/observation", question: options.semanticObservation.calibration.question };
+  criteria.push({ id: "acceptance", stage: "accept", description: options.semanticObservation?.criterion ?? "The recorded command finished successfully with exit code zero.", expected_outcome: options.semanticObservation?.criterion ?? "A terminal success with exit code zero is observed", source_id: "plan", depends_on: ["implementation"], predicate });
   const stages: Json[] = [{ id: "implement", kind: "implementation", depends_on: [] }, { id: "accept", kind: "gate", depends_on: ["implement"] }];
   if (options.publication) {
     stages.push({ id: "publish", kind: "publication", depends_on: ["accept"] });
@@ -110,10 +227,10 @@ async function fixture(name: string, options: { publication?: boolean; external?
   }
   const contract: Obj = {
     schema_version: 1, id: name, project: "phase-exit", phase: "bounded-acceptance", revision: 1, parent_digest: null,
-    identity: { source: sourceHash, fixture: "bounded-v1", platform: `${process.platform}-${process.arch}` },
+    identity: { source: sourceHash, fixture: options.semanticObservation?.calibration.rubricVersion ?? "bounded-v1", platform: `${process.platform}-${process.arch}`, ...(options.semanticObservation ? { calibration_fixture: options.semanticObservation.calibration.fixtureDigest, calibration_adoption: options.semanticObservation.calibration.adoptionDigest } : {}) },
     exclusions: ["Windows qualification", "Unrelated product tests"], prerequisites: options.external ? ["acceptance"] : [],
     boundary: { implementation_stages: ["implement"] }, retry_limits: { max_attempts: 3, max_elapsed_seconds: 60 },
-    jev: { model: "jev-1.14.0", rubric_version: "bounded-v1", support_threshold: 0.95, contradiction_threshold: 0.05 },
+    jev: { model: "jev-1.14.0", rubric_version: options.semanticObservation?.calibration.rubricVersion ?? "bounded-v1", support_threshold: 0.95, contradiction_threshold: 0.05 },
     sources: ["assessment", "analysis", "specification", "plan"].map(role => ({ id: role, role, path: source, sha256: sourceHash })), conflicts: [], stages, criteria, actions, hooks: options.hooks ?? null,
   };
   const f: Fixture = { dir, state: join(dir, "state"), contractPath: join(dir, "contract.json"), evidencePath: join(dir, "evidence.json"), contract, evidence: {}, digest: "" };
@@ -121,6 +238,9 @@ async function fixture(name: string, options: { publication?: boolean; external?
   f.evidence = { schema_version: 1, contract_digest: f.digest, records: [await receipt(f, "implementation", implementation)] };
   if (options.external) {
     const artifact = await jsonFile(join(dir, "external.json"), { available: false, reason: "Required genuine collaborator is unavailable" });
+    array(f.evidence["records"]).push(await receipt(f, "acceptance", artifact));
+  } else if (options.semanticObservation) {
+    const artifact = await jsonFile(join(dir, "semantic.json"), { observation: options.semanticObservation.observation });
     array(f.evidence["records"]).push(await receipt(f, "acceptance", artifact));
   } else if (options.semantic) {
     const artifact = await jsonFile(join(dir, "semantic.json"), { statement: options.semantic });
@@ -146,8 +266,30 @@ async function evaluate(f: Fixture, stage = "accept", extra: string[] = [], env?
   await jsonFile(f.evidencePath, f.evidence);
   return cli(["evaluate", "--contract", f.contractPath, "--evidence", f.evidencePath, "--stage", stage, "--state-dir", f.state, ...extra], [0, 10, 11, 12, 13, 14], env);
 }
+async function assertCalibrationFixture(f: Fixture, example: Obj, calibration: AdoptedCalibration): Promise<void> {
+  expect(sameJson(f.contract["jev"], { model: "jev-1.14.0", rubric_version: calibration.rubricVersion, support_threshold: 0.95, contradiction_threshold: 0.05 }), "Resumed calibration changed model, rubric or thresholds");
+  const identity = object(f.contract["identity"]);
+  expect(identity["fixture"] === calibration.rubricVersion && identity["calibration_fixture"] === calibration.fixtureDigest && identity["calibration_adoption"] === calibration.adoptionDigest && identity["source"] === calibration.fixtureDigest, "Calibration state belongs to another fixture/adoption");
+  const criterion = array(f.contract["criteria"]).map(object).find(item => item["id"] === "acceptance");
+  expect(criterion !== undefined && criterion["description"] === example["criterion"] && criterion["expected_outcome"] === example["criterion"] && sameJson(criterion["predicate"], { kind: "semantic", pointer: "/observation", question: calibration.question }), "Calibration criterion or question differs from adopted mapping");
+  const sources = array(f.contract["sources"]).map(object);
+  expect(sources.length > 0, "Calibration source snapshot missing");
+  for (const source of sources) expect(source["sha256"] === calibration.fixtureDigest && hash(await readFile(text(source["path"]))) === calibration.fixtureDigest, "Calibration source snapshot differs from frozen fixture");
+  const records = array(f.evidence["records"]).map(object);
+  const superseded = new Set(records.map(record => record["supersedes"]));
+  const current = records.filter(record => record["criterion_id"] === "acceptance" && !superseded.has(record["id"]));
+  expect(current.length === 1, "Calibration requires one current structured observation");
+  const observation = object(JSON.parse(await readFile(text(object(current[0])["artifact_path"]), "utf8")));
+  expect(sameJson(observation, { observation: object(example["evidence"]) }), "Calibration evidence differs from the adopted structured observation");
+}
 const verdict = (d: Obj, expected: string): void => expect(d["verdict"] === expected, `Expected ${expected}, observed ${String(d["verdict"])}: ${JSON.stringify(d["reasons"])}`);
 
+if (calibrationProofPath) {
+  expect(selectedCases?.length === 1 && selectedCases[0] === "real-uar-import", "Retained calibration proof permits only the real-uar-import rerun");
+  successfulCalibration = await retainedCalibration(calibrationProofPath);
+} else if (selectedCases?.some(id => id === "jev-live-frozen-calibration" || id === "real-uar-import")) {
+  expect(selectedCases.length === 2 && selectedCases.includes("jev-live-frozen-calibration") && selectedCases.includes("real-uar-import"), "Adopted calibration rerun must select exactly jev-live-frozen-calibration,real-uar-import together");
+}
 await mkdir(output, { recursive: true });
 await one("pinned-toolchain", async () => {
   expect(process.version === "v24.22.0", `Expected Node24.22.0, observed ${process.version}`);
@@ -286,7 +428,8 @@ await one("jev-transient-retry-exhaustion", async () => {
 });
 await one("jev-live-frozen-calibration", async () => {
   expect(Boolean(process.env.JEV_API_KEY), "Live JEV credential unavailable; live semantic claims unverified");
-  const set = object(JSON.parse(await readFile(join(project, "fixtures", "semantic-examples.json"), "utf8")));
+  const calibration = await adoptedCalibration();
+  const set = calibration.set;
   const observations: Obj[] = [];
   const failures: string[] = [];
   for (const item of array(set["examples"])) {
@@ -294,14 +437,16 @@ await one("jev-live-frozen-calibration", async () => {
     try {
     const resumeRoot = process.env.PHASE_EXIT_CALIBRATION_RESUME_ROOT;
     let f: Fixture;
-    const resumed = resumeRoot ? join(resumeRoot, `jev-live-${id}`) : null;
+    const fixtureName = `jev-live-${calibration.rubricVersion}-${id}`;
+    const resumed = resumeRoot ? join(resumeRoot, fixtureName) : null;
     const exists = resumed ? await lstat(resumed).then(() => true, error => { if (object(error)["code"] === "ENOENT") return false; throw error; }) : false;
     if (resumed && exists) {
       const contractPath = join(resumed, "contract.json"); const evidencePath = join(resumed, "evidence.json");
       f = { dir: resumed, state: join(resumed, "state"), contractPath, evidencePath, contract: object(JSON.parse(await readFile(contractPath, "utf8"))), evidence: object(JSON.parse(await readFile(evidencePath, "utf8"))), digest: "" };
     } else {
-      f = await fixture(`jev-live-${id}`, { semantic: text(object(example["evidence"])["statement"]) });
+      f = await fixture(fixtureName, { semanticObservation: { observation: object(example["evidence"]), criterion: text(example["criterion"]), calibration } });
     }
+    await assertCalibrationFixture(f, example, calibration);
     const d = await evaluate(f);
     const outcome = text(example["expected_semantic_outcome"]);
     const cache = await readdir(join(f.state, "jev-cache"));
@@ -309,9 +454,10 @@ await one("jev-live-frozen-calibration", async () => {
     const judgment = object(JSON.parse(await readFile(join(f.state, "jev-cache", cache[0] ?? "missing"), "utf8")));
     expect(judgment["live"] === true && judgment["model"] === "jev-1.14.0", "Calibration lacks exact preview-model live observation");
     const support = judgment["support"]; const contradiction = judgment["contradiction"];
-    expect(typeof support === "number" && typeof contradiction === "number", "Calibration probabilities missing");
+    expect(typeof support === "number" && Number.isFinite(support) && support >= 0 && support <= 1 && typeof contradiction === "number" && Number.isFinite(contradiction) && contradiction >= 0 && contradiction <= 1, "Calibration probabilities missing or invalid");
     const codes = array(d["reasons"]).map(reason => object(reason)["code"]);
-    expect(!codes.includes("JEV_UNAVAILABLE"), "Service failure is not a semantic calibration result");
+    const expectedCode = outcome === "contradicted" ? "SEMANTIC_CONTRADICTION" : "SEMANTIC_UNCERTAIN";
+    expect(outcome === "supported" ? codes.length === 0 : codes.length === 1 && codes[0] === expectedCode, "Service, integrity or unrelated criterion failure is not a semantic calibration result");
     observations.push({ id, expected: outcome, decision: d["verdict"] ?? null, support: support ?? null, contradiction: contradiction ?? null, request_digest: judgment["request_digest"] ?? null, resumed: exists });
     const before = await readdir(join(f.state, "jev-attempts"));
     const sameSemanticDecision = (actual: Obj): void => {
@@ -329,15 +475,19 @@ await one("jev-live-frozen-calibration", async () => {
     expect((await readdir(join(f.state, "jev-attempts"))).length === before.length, "Receipt metadata refresh resampled unchanged semantic input");
     if (outcome === "supported") {
       verdict(d, "COMPLETE"); expect(typeof support === "number" && support >= 0.95 && typeof contradiction === "number" && contradiction <= 0.05, "Supported calibration threshold not observed");
+      expect(d["phase_complete"] === true, "Supported calibration did not complete its isolated phase");
     } else {
       verdict(d, "REVIEW_REQUIRED"); expect(d["phase_complete"] === false, "Non-support semantic evidence passed");
       expect(codes.includes(outcome === "contradicted" ? "SEMANTIC_CONTRADICTION" : "SEMANTIC_UNCERTAIN"), `Expected actual ${outcome} semantic class`);
       if (outcome === "contradicted") expect(typeof contradiction === "number" && contradiction >= 0.95, "Confident contradiction was not observed");
+      else expect(typeof support === "number" && typeof contradiction === "number" && contradiction < 0.95 && !(support >= 0.95 && contradiction <= 0.05), "Incomplete observation did not fall in the adopted uncertainty region");
     }
     } catch (error) { failures.push(`${id}: ${error instanceof Error ? error.message : "Unknown calibration failure"}`); }
   }
-  await jsonFile(join(output, "calibration-observations.json"), { schema_version: 1, observations, failures });
+  await jsonFile(join(output, "calibration-observations.json"), { schema_version: 1, fixture_sha256: calibration.fixtureDigest, adoption_sha256: calibration.adoptionDigest, amendment_sha256: calibration.amendmentDigest, mapping_sha256: calibration.mappingDigest, rubric_version: calibration.rubricVersion, observations, failures });
   expect(failures.length === 0, failures.join("; "));
+  expect(observations.length === 3, "All three adopted calibration classes must be observed in this run");
+  successfulCalibration = calibration;
 });
 
 await one("real-local-hook-bridge", async () => {
@@ -384,17 +534,21 @@ await one("real-uar-import", async () => {
   const uar = process.env.PHASE_EXIT_UAR_ROOT;
   expect(Boolean(uar), "PHASE_EXIT_UAR_ROOT required for real UAR import; example fixture alone is insufficient");
   if (!uar) return;
+  const calibration = successfulCalibration;
+  expect(calibration !== undefined && (retainedCalibrationProof !== null || cases.some(c => c.id === "jev-live-frozen-calibration" && c.passed)), "Real UAR adoption withheld: adopted v2 JEV calibration has no same-run pass or validated retained proof");
+  if (!calibration) return;
+  const calibrationAuthority = retainedCalibrationProof ? `Retained passing calibration proof ${text(retainedCalibrationProof["path"])} SHA-256 ${text(retainedCalibrationProof["sha256"])}; original observations retained without reevaluation.` : "Calibration passed in this run.";
+  const adoptionAuthority = `Operator-approved Phase Exit/UAR implementation plan and explicit instruction to adopt the reviewed calibration amendment, continue Phase Exit, and resume UAR v1.1.1. Calibration adoption ${calibration.adoptionDigest}; mapping ${calibration.mappingDigest}; frozen fixture ${calibration.fixtureDigest}. ${calibrationAuthority}`;
   const phase = join(uar, ".kbd-orchestrator", "phases", "uar-outstanding-issues-v1-1-1");
   const manifest = join(phase, "evidence", "gates", "local.json");
   const manifestValue = object(JSON.parse(await readFile(manifest, "utf8")));
-  const imported = await importUarSnapshot({ root: uar, output: join(output, "uar-snapshot"), receipts: [{ manifest, receipt: join(text(manifestValue["evidence_root"]), "receipt.json") }], adoptionReference: "operator-approved Phase Exit implementation plan, UAR mapping and bounded acceptance" });
+  const imported = await importUarSnapshot({ root: uar, output: join(output, "uar-snapshot"), receipts: [{ manifest, receipt: join(text(manifestValue["evidence_root"]), "receipt.json") }], adoptionReference: adoptionAuthority });
   expect(imported.ok, imported.ok ? "" : imported.error.code);
   if (!imported.ok) return;
   expect(imported.value.implementationItems === 19 && imported.value.imageScenarios === 76 && imported.value.nativeSupplements === 4, "UAR count reconciliation differs from approved scope");
   expect(GROUPS.length === 6 && NATIVE_SUPPLEMENTS.length === 4 && GROUPS.reduce((n, group) => n + IMAGE_SCENARIOS[group].length, 0) === 76, "UAR adapter exported a different scope");
-  expect(cases.some(c => c.id === "jev-live-frozen-calibration" && c.passed), "Real UAR adoption withheld: frozen JEV calibration did not pass");
   const f: Fixture = { dir: join(output, "uar-snapshot"), state: join(output, "uar-state"), contractPath: imported.value.contract, evidencePath: imported.value.evidence, digest: imported.value.contractDigest, contract: object(JSON.parse(await readFile(imported.value.contract, "utf8"))), evidence: object(JSON.parse(await readFile(imported.value.evidence, "utf8"))) };
-  await adopt(f);
+  await adopt(f, null, [], { reviewer: "phase-exit-import-mapping-conformance", reviewRationale: "Check imported artifact identity and operator-approved mapping conformance only; this is not another UAR source review and does not expand its review cap or scope.", operator: "gqadonis", rationale: adoptionAuthority });
   const d = await evaluate(f, "release");
   expect(d["phase_complete"] === false, "Incomplete real UAR phase was certified");
   expect(array(d["unmet_criteria"]).includes("qualified-supervisor"), "Mandatory external qualification disappeared from UAR decision");
@@ -402,6 +556,6 @@ await one("real-uar-import", async () => {
 });
 
 const passed = cases.every(c => c.passed);
-await jsonFile(join(output, "receipt.json"), { schema_version: 1, status: passed ? "passed" : "failed", platform: `${process.platform}-${process.arch}`, node: process.version, binary_sha256: hash(await readFile(binary)), cases: cases.map(c => ({ ...c })), commands, limitations: ["Controlled transport fixtures do not establish live service behavior", "Native package validation is separate from actual host execution", "UAR publication remains subject to its own adopted gates"] });
+await jsonFile(join(output, "receipt.json"), { schema_version: 1, status: passed ? "passed" : "failed", platform: `${process.platform}-${process.arch}`, node: process.version, binary_sha256: hash(await readFile(binary)), cases: cases.map(c => ({ ...c })), commands, retained_calibration_proof: retainedCalibrationProof, limitations: ["Controlled transport fixtures do not establish live service behavior", "Native package validation is separate from actual host execution", "UAR publication remains subject to its own adopted gates"] });
 process.stdout.write(JSON.stringify({ status: passed ? "passed" : "failed", cases: cases.length, failed: cases.filter(c => !c.passed).map(c => c.id), receipt: join(output, "receipt.json") }) + "\n");
 process.exitCode = passed ? 0 : 1;

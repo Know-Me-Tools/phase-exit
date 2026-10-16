@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "kind": "adopted_calibration_mapping",
+  "adoption_record": ".phase-exit/adoptions/calibration-terminal-receipts-v2.json",
+  "adoption_sha256": "9b9e3f9f2842843ca1fda0efdb9ec5a273eee17b3fa746fd5b3bb6d5ed4667b4",
+  "amendment_path": "docs/amendments/calibration-terminal-receipts-v2.json",
+  "amendment_sha256": "47290ecd97da4a417368a2196a1b679ca97872ba9177d305c66f6ce078e20100",
+  "fixture_path": "fixtures/semantic-examples-v2.json",
+  "fixture_sha256": "56fc52a7108cfeead7746d896f1a363257b94bb98f923e29091b4feda4bfbf17",
+  "original_fixture_path": "fixtures/semantic-examples.json",
+  "original_fixture_sha256": "c7d381a7982e1d6f833861a89252efd137f7d9a92cc99518d70c700ddd285f54",
+  "unchanged": {
+    "model": "jev-1.14.0",
+    "channel": "preview",
+    "support_threshold": 0.95,
+    "contradiction_threshold": 0.05,
+    "retry_limit": 2
+  },
+  "affected_gates": [
+    "jev-live-frozen-calibration",
+    "real-uar-import"
+  ],
+  "rationale": "Exact reviewed examples and rubric projected into runner fixture after explicit operator adoption; no probability tuning"
+}

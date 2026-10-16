@@ -302,13 +302,21 @@ async function collect(options) {
         const candidate = receipts.find(receipt => receipt.current && receipt.identityValid && receipt.manifest.stage === 'local'
             && receipt.manifestSource.sha256 === observation.manifest_sha256 && receipt.receiptSource.sha256 === observation.receipt_sha256);
         const action = actions.find(action => action.id === 'uar-local-acceptance');
+        const observedArgv = observation.argv;
         if (!candidate || !action || candidate.receipt.status !== 'started' || candidate.receipt.finished_at !== undefined
             || candidate.receipt.exit_code !== undefined || typeof candidate.receipt.started_at !== 'number'
             || candidate.receipt.started_at > observedAt || candidate.receipt.started_at < 0
-            || observation.executable !== action.executable || observation.cwd !== action.cwd || !equal(observation.argv, action.argv)) {
+            || observation.executable !== action.executable || observation.cwd !== action.cwd
+            || !Array.isArray(observedArgv) || observedArgv.length !== 3
+            || !observedArgv.every((argument) => typeof argument === 'string')
+            || observedArgv[0] !== action.argv[0] || observedArgv[1] !== '--manifest' || typeof observedArgv[2] !== 'string') {
+            throw new Error('ACTIVE_OPERATION_IDENTITY_MISMATCH');
+        }
+        if (await realpath(resolve(action.cwd, observedArgv[2])) !== candidate.originalManifest) {
             throw new Error('ACTIVE_OPERATION_IDENTITY_MISMATCH');
         }
         // The trusted host poll proves running; started JSON alone never creates WAIT.
+        action.argv = observedArgv;
         action.stage = 'local-operation';
         action.covers_criteria = [];
         active = { receipt: candidate, observedAt, observationSource: observationCapture.source, operation: {

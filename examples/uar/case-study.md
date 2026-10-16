@@ -29,3 +29,25 @@ published child-image programs and release/issue receipts remain required.
 **Actual outcome:** draft imported, counts reconciled, adoption withheld; no
 engine-certified UAR completion and no v1.1.1 release. This case demonstrates
 honest stopping and preserved evidence, with the unsuccessful calibration exposed.
+
+## Adopted continuation and use in place
+
+The operator adopted the reviewed terminal-receipt amendment and instructed
+publication before use. Preview source00508d4 was pushed first. The adopted
+calibration passed with model jev-1.14.0 preview and unchanged0.95/0.05 thresholds.
+The original0.80 result remains historical; it was never resampled to obtain a pass.
+
+Actual use exposed two adapter defects: substituting an absolute manifest argv
+for the real relative argv, and treating old expected inventory hashes as captured
+freshness identity. Both were repaired in the same repository. The UAR-only gate
+then reused the passing calibrated evidence without another semantic evaluation.
+
+The real imported contract was explicitly adopted under the approved phase
+authority. Its release decision returned BLOCKED with qualified-supervisor and
+the existing implementation-L1/R7 mismatches visible. A separately hash-bound
+fresh host observation yielded WAIT for the exact original session83623 command.
+Both decisions report phase_complete=false and next_authorized_action=null.
+
+**Current outcome:** Phase Exit's scoped first pass and real UAR application pass.
+UAR remains waiting/blocked; its original runtime operation and source are
+preserved. No v1.1.1 publication is authorized until the full required gates pass.

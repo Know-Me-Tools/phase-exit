@@ -5,10 +5,13 @@ contract. A Rust engine checks artifact identity and evidence predicates; option
 TypeSafe **`jev-1.14.0` preview** judgments answer narrowly defined semantic
 questions. Node hooks and Agent Skills expose the decision to coding hosts.
 
-**Published preview for use in the UAR v1.1.1 phase.** Acceptance is still in
-progress. The original calibration returned support0.80 against the required0.95.
-The operator has adopted the reviewed terminal-receipt amendment; its affected
-gates must pass before UAR adoption and release readiness can be claimed.
+**Published preview for use in the UAR v1.1.1 phase.** The adopted terminal-receipt
+calibration passed with positive support0.98 against the unchanged required0.95.
+The bounded Mac acceptance and real UAR import/active-operation paths passed.
+Real use exposed adapter defects that were repaired in this repository. UAR now
+evaluates to WAIT for its running operation and BLOCKED for release. The original
+0.80 calibration remains preserved; UAR release readiness still requires its own
+complete acceptance evidence and external prerequisites.
 See [observed results](docs/acceptance-results.md) and the
 [reviewed amendment](docs/amendments/calibration-terminal-receipts-v2.md).
 The authoritative status is [.phase-exit/project-phase.json](.phase-exit/project-phase.json).

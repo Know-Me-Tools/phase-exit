@@ -1,6 +1,12 @@
 # Observed acceptance results — 2026-10-16
 
-The implementation is not certified. The frozen positive semantic example failed
+The bounded first-pass Mac program now passes through the retained original27
+passing cases, the adopted v2 calibration and the repaired real UAR gate. The
+actual running UAR operation also evaluated to WAIT. This scope does not certify
+every native host or establish UAR release readiness. See the current receipt
+`.phase-exit/acceptance/completion.json`; original observations follow.
+
+The original frozen positive semantic example failed
 at support 0.80, contradiction 0.02 against support >=0.95 and contradiction <=0.05.
 The engine returned REVIEW_REQUIRED. No probability, model or example was changed
 to obtain a pass. The operator authorized preparation of an amendment for review,
@@ -62,3 +68,28 @@ The original proposal, reviews and failed probabilities above remain historical
 artifacts. Its new calibration mapping and affected gates are pending. Model and
 thresholds are unchanged. UAR release publication still requires every mandatory
 gate; preview source publication does not establish certification.
+
+## Completed affected gates and real use
+
+Inventory05 preceded the adopted mapping/actual-argv checks. Live calibration
+acceptance04 observed positive support0.98/contradiction0.01, negative0.01/0.99,
+and expected incomplete0.01/0.20. All three matched their adopted classes. Its
+UAR check exposed a freshness bug; no new semantic samples were taken afterward.
+
+Inventory06 preceded the full freshness/carry repair checks. TypeScript
+compilation and package generation exited0. UAR-only acceptance05 exited0 using
+the original hash-bound passing calibration proof. The real release evaluation
+returned BLOCKED with the supervisor prerequisite and implementation-L1/R7 unmet.
+The active snapshot preserved the original relative manifest argv and returned
+WAIT for session83623, phase_complete=false, next_authorized_action=null.
+
+The fixes preserve captured evidence separately from expected inventory acceptance,
+expose bounded freshness causes, and allow an affected gate to reuse already
+passing calibration evidence. No Rust engine or model/threshold change was needed.
+No broad passing gate or source review was repeated. Both original review rounds
+and subsequent in-place repair receipts remain in history.
+
+Phase Exit's scoped first pass is complete. UAR v1.1.1 remains incomplete: the
+original acceptance operation is nonterminal, its complete failure cohort is not
+available, and genuine qualified-supervisor evidence is still missing. No UAR
+source, candidate, production resource, tag or published release was changed.

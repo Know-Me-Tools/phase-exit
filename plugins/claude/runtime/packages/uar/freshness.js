@@ -82,10 +82,11 @@ export async function checkFreshness(snapshotPath) {
         throw new Error('INVALID_ITEM_FILES');
     for (const value of snapshot.item_files) {
         const entry = object(value);
-        if (typeof entry.path !== 'string' || typeof entry.sha256 !== 'string')
+        if (typeof entry.path !== 'string' || typeof entry.sha256 !== 'string'
+            || typeof entry.actual !== 'string' || !/^sha256:[a-f0-9]{64}$/.test(entry.actual))
             throw new Error('INVALID_ITEM_FILE');
         const path = resolve(snapshot.root, entry.path);
-        if (!contained(snapshot.root, path) || `sha256:${sha256(await readFile(path))}` !== entry.sha256) {
+        if (!contained(snapshot.root, path) || `sha256:${sha256(await readFile(path))}` !== entry.actual) {
             throw new Error('UAR_INVENTORY_ITEM_CHANGED');
         }
     }
@@ -117,13 +118,21 @@ export async function checkFreshness(snapshotPath) {
 }
 /** Importer replaces this sentinel in its private, hash-bound self-contained hook. */
 const snapshotFile = '__PHASE_EXIT_UAR_SNAPSHOT_PATH__';
+const freshnessErrorCodes = new Set([
+    'SOURCE_PATH_ESCAPE', 'DIRTY_SUBMODULE', 'UNSUPPORTED_SOURCE_FILE', 'INVALID_SNAPSHOT', 'INVALID_SNAPSHOT_PATHS',
+    'INVALID_SNAPSHOT_ROOT', 'INVALID_SNAPSHOT_INVENTORY', 'UAR_INVENTORY_CHANGED', 'UAR_SOURCE_OR_FIXTURE_CHANGED',
+    'INVALID_ITEM_FILES', 'INVALID_ITEM_FILE', 'UAR_INVENTORY_ITEM_CHANGED', 'INVALID_RECEIPT_INVENTORY',
+    'UAR_RUNNING_RECEIPT_CHANGED', 'UAR_ACTION_MANIFEST_CHANGED', 'INVALID_RAW_ARTIFACTS', 'INVALID_RAW_ARTIFACT',
+    'UAR_RAW_EVIDENCE_CHANGED',
+]);
 export async function run(_input) {
     try {
         await checkFreshness(snapshotFile);
         return { schema_version: 1, veto: false, reason: 'UAR source, fixtures and inventory item bytes match the imported snapshot.' };
     }
-    catch {
-        return { schema_version: 1, veto: true, reason: 'UAR source freshness could not be established; recollect and explicitly adopt a new contract revision.' };
+    catch (error) {
+        const code = error instanceof Error && freshnessErrorCodes.has(error.message) ? error.message : 'UNKNOWN';
+        return { schema_version: 1, veto: true, reason: `UAR source freshness could not be established (${code}); recollect and explicitly adopt a new contract revision.` };
     }
 }
 //# sourceMappingURL=freshness.js.map

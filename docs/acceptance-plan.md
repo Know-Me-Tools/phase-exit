@@ -64,3 +64,43 @@ frozen example even if an earlier example fails. It never creates a fresh sample
 for an unchanged earlier example, lowers thresholds or overwrites the original
 program receipt. A continuation receipt is partial coverage and must be read
 alongside the original receipt; it does not recertify passing gates.
+
+## Adopted terminal-receipt calibration
+
+The operator adopted the reviewed v2 amendment after the original calibration
+failed. The original `fixtures/semantic-examples.json` and responses remain
+historical. `fixtures/semantic-examples-v2.json` projects the reviewed structured
+terminal observations and question. The separate adoption and mapping records
+under `.phase-exit/adoptions/` bind the original, proposal, review and new fixture
+bytes without circular hashes. The runner checks those identities before use.
+
+The adopted model remains jev-1.14.0 preview; support>=0.95 and contradiction<=0.05
+remain unchanged. Each materially changed example permits one new sample under
+the same bounded transient retries. The expected incomplete example passes its
+calibration class check only when the engine returns SEMANTIC_UNCERTAIN; it never
+establishes completion of that example's command criterion. Unexpected uncertainty
+or a service/integrity error fails calibration. There is no tuning to the UAR result.
+
+TypeScript compilation and the selected `jev-live-frozen-calibration` plus
+`real-uar-import` cases are affected by this mapping. The accompanying real-use
+adapter repair preserves the actual relative manifest argv after verifying its
+canonical destination. Regenerate its packaged JavaScript and exercise the
+existing real active-operation path with a fresh native-host observation. The
+Rust engine, protocol, hooks, installers and native hook sources are unchanged. Their previously
+passing observations carry with those exact source/artifact identities; this
+mapping does not upgrade any existing UAR product receipt. No Rust build or
+passing acceptance case is rerun merely because the calibration fixture changed.
+
+The first v2 run passed calibration and exposed the UAR freshness defect. Its
+calibration result carries to a UAR-only rerun through an explicit retained proof:
+original terminal program receipt hash, observation-file hash, three original
+live judgment hashes, exact binary and adopted fixture/adoption/mapping/amendment
+identities. `PHASE_EXIT_CALIBRATION_PROOF` selects this proof for
+`PHASE_EXIT_ACCEPTANCE_CASES=real-uar-import`. Verify the three adopted classes and
+their live cached responses from those bytes; do not call JEV or rerun calibration.
+The failed original program and superseded original0.80 calibration remain history.
+
+Freshness compares the current UAR files to captured import-time hashes. Inventory
+acceptance separately compares those captured bytes with the approved inventory
+expectations. An existing mismatch stays an unmet criterion; a later mutation
+vetoes evaluation with a bounded cause code. Neither condition becomes a pass.

@@ -64,7 +64,9 @@ The importer implements UAR's actual `source_identity` algorithm: read-only
 per-file SHA-256, symlink-target bytes, clean submodule commit identity, deleted
 markers, and final framed tree digest. It recomputes source and fixture digests
 before output. Every inventory item file is independently compared with its
-recorded hash. Unknown item sets or changed reconciliation scope fail collection.
+recorded hash. The snapshot retains the inventory's expected `sha256` and the
+captured `actual` hash separately; a mismatch leaves its implementation criterion
+unmet. Unknown item sets or changed reconciliation scope fail collection.
 
 The required `evaluation.before` hook is generated from compiled, self-contained
 `freshness.js`, with the private snapshot path embedded and module/config bytes
@@ -73,7 +75,13 @@ hashed. Its input/output schema IDs are `phase-exit/hook-input/v1` and
 Set `PHASE_EXIT_HOOK_RUNNER` to the shipped Node hook runner before Rust
 evaluation. The hook checks current source/fixture identity, original inventory
 bytes, each item file and raw artifacts used by passing current receipts.
-It vetoes stale or unreadable state. Only read-only Git subprocesses are used;
+Item freshness requires a valid captured `actual` SHA-256 hash and compares live
+bytes with that hash. An existing mismatch with the inventory's expected hash
+remains an unmet implementation criterion; it does not become a freshness veto
+when captured bytes are unchanged. The hook vetoes stale or unreadable state and
+reports only a predefined freshness error code, or `UNKNOWN` for other errors,
+without exposing raw error messages, paths or environment values.
+Only read-only Git subprocesses are used;
 the environment allowlist supports Git's normal path/global-ignore resolution.
 Neither collection nor the hook runs product tests or production mutations.
 
@@ -136,8 +144,12 @@ whole-program criterion, all 76 image scenarios, and the four native supplements
 for the local action only. Publication, release, supervisor qualification, issue
 readbacks and reflection are not covered by these runner actions. When a trusted
 running observation moves the local action to `local-operation`, its coverage
-list is empty; `local-runner-operation` binds that exact action through
-`command_success.action_id` instead.
+list is empty. The observation must contain exactly three string arguments with
+the approved script and `--manifest`; its manifest path is resolved against the
+validated UAR cwd and must have the same realpath as the original canonical
+manifest. The action then preserves the observed argv unchanged, including a
+relative manifest argument. `local-runner-operation` binds that exact action
+through `command_success.action_id` instead.
 
 ## Running operation and immutable evaluator flow
 
@@ -162,9 +174,11 @@ type ActiveOperationObservation = {
 };
 ```
 
-The importer hash-binds that original observation as a source, compares its full
-command and both digests, verifies the original receipt still says started with
-no final exit/time, and requires a current matching inventory/source/image. It
+The importer hash-binds that original observation as a source, compares its
+executable and cwd exactly, validates its approved argv and canonical manifest
+identity, and preserves the observed argv in the action. It checks both digests,
+verifies the original receipt still says started with no final exit/time, and
+requires a current matching inventory/source/image. It
 does not inspect PID liveness, synthesize a poll, or renew a stale observation.
 The native runner session is trusted local audit provenance, not authentication.
 

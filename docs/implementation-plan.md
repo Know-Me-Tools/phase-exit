@@ -50,3 +50,40 @@ know-me mutation, cancelled-program revival or immutable-tag movement.
 The uncomfortable limit: schema correctness, hashes and JEV confidence do not
 prove absence of all bugs or prevent privileged local bypass. Preserve honest
 blocked outcomes and enforcement coverage instead of asserting universal control.
+
+## Adopted continuation
+
+The operator adopted the reviewed `calibration-terminal-receipts-v2` amendment,
+then explicitly instructed publication of the Phase Exit README and source before
+use on UAR. Source preview00508d4 is pushed. Product certification remains pending.
+The lead owns immutable adoption/mapping records and the projected v2 fixture;
+the TypeScript teammate owns only the bounded acceptance-runner mapping for this
+cohort. No Rust engine, model, threshold, hook, installer or package-source change
+is planned for this amendment.
+
+Real-use source inspection also exposed a mismatch between the importer's assumed
+absolute manifest argument and the original runner's actual relative argument.
+The same cohort includes a bounded UAR-adapter repair: validate that the observed
+argument resolves to the canonical approved manifest and preserve the exact
+observed argv. Existing identity, hashes, running state and expiry checks remain.
+The adapter author owns `packages/uar/importer.ts` and its interface documentation.
+No UAR source or process is changed. This is the already planned active-operation
+behavior, not a new release requirement.
+
+Finish that mapping, its fixtures and documentation, then record inventory05.
+Run TypeScript compilation, regenerate the packaged adapter JavaScript, and only
+the affected calibration plus real-UAR-import cases. Use the real active-operation
+path with a fresh host observation as part of the existing UAR application gate.
+Preserve all original judgments and receipts. If these pass, use the
+published tool and skills to adopt/evaluate UAR's real phase snapshot. Record
+WAIT for a freshly observed active runner and BLOCKED for unavailable required
+qualification. Fix an observed tool defect in this repository, preserve its
+failure and rerun only affected gates after the complete repair boundary.
+
+The v2 calibration passed in acceptance04; the UAR gate exposed a freshness
+comparison against inventory expectations rather than captured file bytes. The
+repair retains unmet inventory assertions and compares freshness to captured
+actual hashes, with bounded diagnostic codes. The UAR-only rerun carries the
+original passing calibration through hash-bound proof; it does not repeat that
+gate or create new semantic samples. Finish the whole repair cohort and record
+inventory06 before the affected compiler/package/UAR application checks.
