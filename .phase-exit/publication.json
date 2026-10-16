@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/Know-Me-Tools/phase-exit",
+  "branch": "main",
+  "first_preview_commit": "00508d4",
+  "verified_repair_commit": "b91e93a0daca2f5a937792b5537dcc4b20d93ae0",
+  "command": {
+    "executable": "git",
+    "argv": [
+      "push",
+      "origin",
+      "main"
+    ],
+    "exit_code": 0
+  },
+  "observed_output": "To github.com:Know-Me-Tools/phase-exit.git; 00508d4..b91e93a main -> main",
+  "host_tool_reference": "write_stdin session41112 chunk1155e3",
+  "certification_scope": "bounded Mac Phase Exit first pass with explicit retained evidence and affected-gate receipts",
+  "uar_release_published": false
+}

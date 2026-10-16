@@ -1,8 +1,9 @@
 # Handoff — first UAR example
 
-Status: REVIEW_REQUIRED, phase_complete=false. No new semantic sampling or
-publication is authorized. The operator requested a reviewed amendment and
-explicitly withheld adoption.
+Current status: the scoped Phase Exit first pass is complete and source is
+published at repair commit b91e93a. UAR remains incomplete: local-operation WAIT,
+release BLOCKED, no next authorized action. The sections below retain the earlier
+checkpoint history; the completed continuation at the end supersedes its status.
 
 ## Completed implementation and observed gates
 
@@ -71,3 +72,28 @@ proposal and historical observations above remain preserved. The full production
 boundary is closed while the adopted mapping is implemented; then only affected
 gates run. Preview source publication is authorized; product certification and
 UAR release remain dependent on their mandatory gates.
+
+## Completed continuation
+
+The operator adopted v2 and required publication before use. Preview00508d4 was
+pushed first. Adopted live calibration passed: positive0.98/0.01,
+negative0.01/0.99, incomplete0.01/0.20. Model and thresholds unchanged.
+Actual UAR use exposed relative-argv and captured-freshness defects; both were
+fixed in place. A hash-bound proof carried passing calibration into UAR-only
+acceptance05, which passed without a JEV key or new call. Inventory05/06 preceded
+all affected checks; no passing broad gate or extra source review was repeated.
+
+The real imported contract was adopted under explicit operator phase authority.
+Release -> BLOCKED, qualified-supervisor unavailable, implementation-L1/R7 unmet,
+phase_complete=false. Actual session83623 observation with unchanged relative
+argv -> WAIT, phase_complete=false. Both return next_authorized_action=null.
+The operation receipt's observed_at/expires_at bounds are historical; obtain a
+fresh native observation before making a later WAIT claim. Last native poll after
+push also returned session83623 with no terminal result (chunk8eb4b0).
+
+Final public artifacts: acceptance/completion.json, publication.json,
+reflection.md and docs/acceptance-results.md. Verified repair source b91e93a
+was pushed to main. Current project-phase.json is complete for Phase Exit only.
+The original UAR runner and production source remain untouched; await its actual
+terminal result before collecting the full repair cohort. Missing genuine
+supervisor evidence still blocks UAR release. Do not add scope or fabricate a pass.

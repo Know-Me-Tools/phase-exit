@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "phase": "first-uar-example",
-  "stage": "reflect",
+  "stage": "complete",
   "boundary": "open",
   "approved_by": "operator instruction: PLEASE IMPLEMENT THIS PLAN, 2026-10-16",
   "tasks": [
@@ -63,7 +63,7 @@
       "id": "PUBLISH-1",
       "owner": "lead",
       "deliverable": "public source and usable local skill/plugin packages, truthful receipts",
-      "status": "fixes_ready_for_push"
+      "status": "complete"
     },
     {
       "id": "REPAIR-1",
@@ -114,9 +114,16 @@
   "implementation_inventory": ".phase-exit/implementation-inventory-06.json",
   "repair_cohort": "real-uar-freshness-and-calibration-carry",
   "calibration_status": "PASSED_V2_RETAINED_PROOF",
-  "next_authorized_action": "Push completed in-place Phase Exit fixes and receipts; UAR operation WAIT and release BLOCKED with no next action.",
-  "source_publication": "Preview00508d4 already pushed before use; verified in-place repair commit pending push",
+  "next_authorized_action": "Phase Exit scoped first pass complete. UAR active operation WAIT; release BLOCKED; no UAR action is currently authorized by either decision.",
+  "source_publication": {
+    "repository": "https://github.com/Know-Me-Tools/phase-exit",
+    "branch": "main",
+    "first_preview_commit": "00508d4",
+    "verified_repair_commit": "b91e93a0daca2f5a937792b5537dcc4b20d93ae0",
+    "push_exit_code": 0
+  },
   "adoption_record": ".phase-exit/adoptions/calibration-terminal-receipts-v2.json",
   "phase_exit_acceptance": "passed_scoped_mac_and_real_uar_application",
-  "completion_receipt": ".phase-exit/acceptance/completion.json"
+  "completion_receipt": ".phase-exit/acceptance/completion.json",
+  "phase_complete": true
 }
