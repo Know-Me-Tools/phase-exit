@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phase-exit/hook-context/v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "config_path", "config_sha256", "state_dir", "invocation_id", "payload"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "config_path": { "type": "string", "minLength": 1 },
+    "config_base_dir": { "type": "string", "minLength": 1 },
+    "config_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "state_dir": { "type": "string", "minLength": 1 },
+    "invocation_id": { "type": "string", "minLength": 1 },
+    "payload": { "type": "object" }
+  },
+  "$comment": "Runtime requires config_path, state_dir and the optional config_base_dir to be absolute platform paths."
+}

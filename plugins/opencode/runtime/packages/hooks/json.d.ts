@@ -1,0 +1,11 @@
+import type { Json, JsonObject } from "./types.js";
+export declare const MAX_BYTES = 1048576;
+export declare function object(value: unknown): value is JsonObject;
+export declare function string(value: unknown, label: string): string;
+export declare function digest(bytes: Uint8Array | string): string;
+export declare function parse(bytes: Uint8Array | string): unknown;
+export declare function readBounded(path: string): Promise<Buffer>;
+export declare function stdinJson(): Promise<unknown>;
+export declare function privateName(name: string): boolean;
+export declare function redact(value: Json, secret?: string | undefined): Json;
+export declare function strictKeys(record: JsonObject, allowed: readonly string[]): void;

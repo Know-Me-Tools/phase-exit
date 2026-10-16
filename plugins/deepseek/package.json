@@ -1,0 +1,11 @@
+{
+  "name": "@know-me-tools/phase-exit-deepseek",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./runtime/packages/harnesses/deepseek.js",
+  "files": ["runtime", "skills", "docs", "LICENSE", "cordis.patch.yml", "README.md"],
+  "license": "Apache-2.0",
+  "engines": { "node": "24.22.0" },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } },
+  "peerDependencies": { "@deepseek-ai/cordis": "4.0.4", "@deepseek-ai/dsh-tools": "0.2.0-rc.2", "@deepseek-ai/dsh-agent": "0.2.0-rc.2", "@deepseek-ai/dsh-llm": "0.2.0-rc.2" }
+}

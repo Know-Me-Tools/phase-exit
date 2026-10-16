@@ -1,0 +1,4 @@
+{
+  "version": "2",
+  "plugins": [{ "id": "phase-exit", "displayName": "Phase Exit", "source": "./plugins/kimi" }]
+}

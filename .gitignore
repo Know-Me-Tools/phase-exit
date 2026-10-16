@@ -1,0 +1,22 @@
+/target/
+/node_modules/
+**/node_modules/
+/dist/
+/artifacts/
+/.phase-exit/private/
+/.phase-exit/cache/
+/.phase-exit/work/
+/.phase-exit/local.json
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.tgz
+*.zip
+*.log
+.DS_Store
+Thumbs.db
+# .prometheus, schemas, sanitized receipts, and plugins/*/runtime are tracked.

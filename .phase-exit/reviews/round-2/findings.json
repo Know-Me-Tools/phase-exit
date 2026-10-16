@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "review_round": 2,
+  "review_kind": "single final corrective artifact-only review",
+  "independence": {
+    "fresh_context_native_isolation": true,
+    "cross_model_independence": "unverified",
+    "producer_chat_and_session_history_read": false
+  },
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "file": "tests/acceptance.ts",
+      "line": 319,
+      "claim": "Calibration continuation can fork an already refreshed receipt chain and silently ignore the resulting INVALID evaluation.",
+      "evidence": "The resume path at lines 299-301 loads the existing evidence bundle. Lines 319-321 always take records[1], append a new receipt superseding that original receipt, and evaluate it without checking the returned decision. The observed acceptance-01/jev-live-supported/evidence.json already contains original acceptance-cdf5e2b7-e3b3-47c0-83cd-f1725a3d862c and refreshed-0e77105c-5081-467c-bf6b-c157f34fd73c superseding it. A continuation after that point appends another child of the original, leaving two unsuperseded acceptance receipts. engine.rs lines 121-123 rejects that state; evaluate() in acceptance.ts accepts exit 14, and line 322 checks only the unchanged transport-attempt count. Thus an interruption after an example's refresh can leave a later continuation with invalid evidence while its refresh assertion appears successful, and subsequent evaluations remain INVALID. This is a source-derived continuation defect, not the cause of the recorded 0.80 supported calibration failure.",
+      "suggested_fix": "Refresh the unique current acceptance receipt by following the existing supersession chain, or reuse a previously completed refresh observation. Check that both repeated evaluations retain the initial semantic verdict/reason and are not INVALID, in addition to preserving the attempt count. Keep the existing terminal sample and frozen thresholds; do not call the service again for unchanged evidence."
+    }
+  ],
+  "original_findings_disposition": [
+    {
+      "original_file": "crates/phase-exit-core/src/engine.rs",
+      "original_line": 69,
+      "original_severity": "CRITICAL",
+      "disposition": "resolved_in_implementation",
+      "evidence": "engine.rs lines 69-76 restrict each action to command_success.action_id or explicit covers_criteria and check covered dependencies. lifecycle.rs lines 33-38 reject duplicate, cross-stage and conflicting command coverage. Action types, exported contract schema and rust-interface.md agree on the required coverage field. acceptance.ts lines 198-205 exercise completed A with missing B and exact authorization of B; acceptance-01/receipt.json records select-pending-gate-within-stage as passed. The reviewer did not rerun it."
+    },
+    {
+      "original_file": "tests/acceptance.ts",
+      "original_line": 275,
+      "original_severity": "CRITICAL",
+      "disposition": "resolved_in_implementation; live qualification remains failed",
+      "evidence": "acceptance.ts lines 307-328 require a retained live exact-model judgment, numeric probabilities, no JEV_UNAVAILABLE reason, and the exact contradicted/uncertain reason and frozen supported/contradiction thresholds. Errors are accumulated across all examples at lines 330-333. Lines 388-390 withhold UAR adoption unless calibration passed. The original program receipt records failed calibration and withheld UAR adoption. The continuation observes actual contradiction 0.99 and uncertainty 0.40 but correctly retains failure for supported probability 0.80. Transport/protocol failure can no longer satisfy the expected semantic class."
+    },
+    {
+      "original_file": "crates/phase-exit-core/src/jev.rs",
+      "original_line": 98,
+      "original_severity": "CRITICAL",
+      "disposition": "resolved_in_implementation",
+      "evidence": "jev.rs lines 96-105 derive the sample key from the canonical request, material artifact/contract identity, adopted policy, retry limits and fixture identity, excluding receipt wrapper metadata. Lines 108-120 reuse terminal failure/judgment caches and separately record receipt-specific provenance through lines 22-26. Metadata refresh therefore preserves the sample key while adding an evaluation reference. acceptance.ts lines 316-322 cover repeat/refresh attempt counts. The separate medium continuation finding concerns construction and checking of a second refresh, not renewed semantic sampling in the Rust cache."
+    }
+  ],
+  "s4_summary_diff_disposition": {
+    "disposition": "implemented",
+    "evidence": "lifecycle.rs lines 102-123 render contract identity, inventory, boundary, prerequisites, exclusions, policy, hooks, stages and readable criteria. Lines 125-153 expose structured complete old/new criterion edits and other changed contract fields, readable minus/plus summaries and the invalidation set. propose() at lines 191-197 persists this comparison with proposed status without adopting it. CLI inspect/compare/propose-revision call these functions, and docs/rust-interface.md documents the returned fields and authority limits. Existing contracts, reviews and adoption lineage preserve superseded requirements and rationale. This is source conformance; no additional runtime check was executed by this reviewer."
+  },
+  "remaining_qualification": {
+    "status": "failed",
+    "thresholds_unchanged": { "support_minimum": 0.95, "contradiction_maximum": 0.05 },
+    "observations": [
+      { "example": "supported", "support": 0.8, "contradiction": 0.02, "decision": "REVIEW_REQUIRED", "expected_class_observed": false, "reused_original_sample": true },
+      { "example": "contradicted", "support": 0.01, "contradiction": 0.99, "decision": "REVIEW_REQUIRED", "expected_class_observed": true },
+      { "example": "uncertain", "support": 0.01, "contradiction": 0.4, "decision": "REVIEW_REQUIRED", "expected_class_observed": true }
+    ],
+    "sources": [
+      ".phase-exit/private/acceptance-01/receipt.json",
+      ".phase-exit/private/acceptance-02/calibration-observations.json"
+    ],
+    "consequence": "Implementation repairs do not establish successful live calibration or UAR adoption. Retain the failed original receipt and continuation observations; no threshold tuning or fresh sampling is justified by this review."
+  },
+  "checked_classes": [
+    "Read project operating contract, phase position/open implementation boundary, approved specification and acceptance plan before the corrective source review.",
+    "Checked the original same-stage gate starvation repair, exact authorization, applicable dependencies, implementation boundary and prerequisite preservation, and coverage consistency across types/runtime validation/exported schema/documentation.",
+    "Checked exact live semantic-class acceptance, protocol failures versus judgments, unchanged thresholds, terminal cache reuse, receipt-specific provenance, repeated evaluation and calibration continuation behavior.",
+    "Checked S4 readable contract summaries, direct structured and readable revision changes, evidence invalidation, persisted proposals and explicit adoption separation through the CLI wiring.",
+    "Read the original acceptance receipt and continuation calibration observations as reported observations, not producer explanation; retained failed live qualification separately from implementation conformance.",
+    "Read existing supported and contradicted evidence bundles only to trace the concrete continuation supersession implication. No unrelated subsystem review or new gate was introduced.",
+    "No build, test, compiler, formatter, linter, schema validator, install, packaging command or product API probe was run. No production file was changed. Only this findings artifact was authored."
+  ],
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 0,
+    "original_critical_findings_resolved_in_implementation": 3
+  }
+}

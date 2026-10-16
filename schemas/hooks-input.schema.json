@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phase-exit/hook-input/v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "event", "invocation_id", "payload"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "event": { "enum": ["contract.collected", "contract.frozen", "evidence.imported", "evaluation.before", "judgement.received", "decision.finalized", "amendment.proposed"] },
+    "invocation_id": { "type": "string", "minLength": 1 },
+    "payload": { "type": "object" }
+  }
+}

@@ -1,0 +1,13 @@
+[package]
+name = "phase-exit-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "phase-exit"
+path = "src/main.rs"
+
+[dependencies]
+phase-exit-core = { path = "../phase-exit-core" }
+serde_json.workspace = true

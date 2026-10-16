@@ -1,0 +1,13 @@
+{
+  "name": "phase-exit",
+  "version": "0.1.0",
+  "description": "Evidence-backed phase exit with bounded stop continuation and adopted command checks.",
+  "author": { "name": "Know-Me-Tools" },
+  "license": "Apache-2.0",
+  "skills": ["./skills/phase-contract", "./skills/phase-exit"],
+  "hooks": [
+    { "event": "Stop", "command": "node ./runtime/packages/harnesses/cli.js kimi stop", "timeout": 150 },
+    { "event": "PreToolUse", "command": "node ./runtime/packages/harnesses/cli.js kimi tool", "timeout": 150 }
+  ],
+  "interface": { "displayName": "Phase Exit", "shortDescription": "Evidence-backed phase exit" }
+}

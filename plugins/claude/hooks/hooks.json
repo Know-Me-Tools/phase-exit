@@ -1,0 +1,7 @@
+{
+  "description": "Phase Exit lifecycle and adopted command guards",
+  "hooks": {
+    "Stop": [{ "hooks": [{ "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/runtime/packages/harnesses/cli.js", "claude", "stop"], "timeout": 150, "onFailure": "continue" }] }],
+    "PreToolUse": [{ "matcher": ".*", "hooks": [{ "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/runtime/packages/harnesses/cli.js", "claude", "tool"], "timeout": 150, "onFailure": "block" }] }]
+  }
+}

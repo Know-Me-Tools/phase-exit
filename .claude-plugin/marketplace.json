@@ -1,0 +1,5 @@
+{
+  "name": "know-me-tools-phase-exit",
+  "owner": { "name": "Know-Me-Tools" },
+  "plugins": [{ "name": "phase-exit", "source": "./plugins/claude", "description": "Evidence-backed phase exit", "version": "0.1.0" }]
+}

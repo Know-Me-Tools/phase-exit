@@ -1,0 +1,3 @@
+- insert:
+    - id: phase-exit
+      name: '@know-me-tools/phase-exit-deepseek'

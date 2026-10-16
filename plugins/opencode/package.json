@@ -1,0 +1,11 @@
+{
+  "name": "@know-me-tools/phase-exit-opencode",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./runtime/packages/harnesses/opencode.js",
+  "exports": "./runtime/packages/harnesses/opencode.js",
+  "files": ["runtime", "skills", "docs", "LICENSE", "README.md"],
+  "license": "Apache-2.0",
+  "engines": { "node": "24.22.0" },
+  "peerDependencies": { "@opencode/plugin": "2.0.31" }
+}

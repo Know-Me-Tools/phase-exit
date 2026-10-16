@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "amendment_id": "calibration-terminal-receipts-v2",
+  "review_scope": "One corrective isolated proposal review of R1; not implementation acceptance or adoption.",
+  "verdict": "PROPOSAL_READY_FOR_OPERATOR_REVIEW",
+  "adoption_status": "not_adopted",
+  "cross_model_independence": "unverified",
+  "prior_review": "docs/amendments/calibration-terminal-receipts-v2.review.json",
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "R1",
+      "resolution": "The revised Markdown distinguishes expected uncertainty, which passes only the incomplete example's class check, from unexpected uncertainty on the positive or negative examples, which fails calibration. The JSON requires SEMANTIC_UNCERTAIN, REVIEW_REQUIRED and phase_complete=false for the incomplete example, explicitly excludes service and integrity errors, and requires all three class checks before UAR adoption.",
+      "evidence": [
+        "docs/amendments/calibration-terminal-receipts-v2.md: Invalidation and bounded execution",
+        "docs/amendments/calibration-terminal-receipts-v2.json: calibration_acceptance"
+      ]
+    }
+  ],
+  "reasoning": [
+    "The stated probability regions are mutually exclusive: supported requires support >= 0.95 and contradiction <= 0.05; contradicted requires contradiction >= 0.95; uncertain requires contradiction < 0.95 and failure of the supported condition. Equality boundaries are explicit.",
+    "These regions classify the preserved observations consistently: positive support 0.80 / contradiction 0.02 remains unexpectedly uncertain and fails; negative support 0.01 / contradiction 0.99 is contradicted; incomplete support 0.01 / contradiction 0.4 is expected uncertainty. No historical result is upgraded.",
+    "The revision retains proposed_not_adopted status, the authoritative original fixture, an empty adoption record, unchanged model/channel and acceptance thresholds, immutable historical outcomes, and one post-adoption sample per changed example with bounded transient retries.",
+    "The receipt projections remain the same as those inspected in the first proposal review. The revision now specifies exact command-identity serialization and hash derivation; it continues to disclaim independent runner authentication.",
+    "The original positive support 0.80 failure remains unchanged. Readiness for operator review neither adopts the proposal nor authorizes new semantic samples."
+  ],
+  "inspection": {
+    "command": "cat docs/amendments/calibration-terminal-receipts-v2.md docs/amendments/calibration-terminal-receipts-v2.json",
+    "observed_result": "Exit zero; revised Markdown and JSON returned for source inspection.",
+    "prior_evidence": "Original fixture, specification S3, calibration observations, evidence indexes and terminal command receipts were read in the first isolated proposal review in this same reviewer context.",
+    "tests_builds_api_calls": 0,
+    "producer_history_read": false,
+    "limitations": [
+      "No hash recomputation or production verification was performed.",
+      "The reviewed original specification and fixture establish the support and contradiction acceptance thresholds; they do not independently specify the complete implementation classifier. This review establishes internal consistency of the proposed class regions and their agreement with recorded observations, not a source audit of engine behavior.",
+      "The proposed revision remains unevaluated and its future semantic performance is unverified.",
+      "Cross-model independence and runner authenticity remain unverified."
+    ]
+  },
+  "changes": {
+    "owned_output": "docs/amendments/calibration-terminal-receipts-v2.review-2.json",
+    "other_files_changed": [],
+    "original_review_preserved": true,
+    "production_mutations": false,
+    "unrequested_additions": [],
+    "guards_added": []
+  }
+}

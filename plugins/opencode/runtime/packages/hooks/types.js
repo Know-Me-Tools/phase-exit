@@ -1,0 +1,2 @@
+export const EVENTS = ["contract.collected", "contract.frozen", "evidence.imported", "evaluation.before", "judgement.received", "decision.finalized", "amendment.proposed"];
+//# sourceMappingURL=types.js.map

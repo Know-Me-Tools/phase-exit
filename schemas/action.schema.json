@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Know-Me-Tools/phase-exit/schemas/action.schema.json",
+  "title": "Phase Exit action v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "action_id",
+    "kind",
+    "executable",
+    "argv",
+    "cwd"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "action_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.-]+$"
+    },
+    "kind": {
+      "enum": [
+        "implementation",
+        "gate",
+        "publication",
+        "repair"
+      ]
+    },
+    "executable": {
+      "type": "string",
+      "minLength": 1
+    },
+    "argv": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "cwd": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

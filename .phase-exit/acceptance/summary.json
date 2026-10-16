@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "document_kind": "sanitized_summary_not_executable_evidence",
+  "status": "REVIEW_REQUIRED",
+  "phase_complete": false,
+  "original_program": {
+    "cases": [
+      {
+        "id": "pinned-toolchain",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "complete-real-command",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "stage-not-phase",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "failed-observation-bounded-repair",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "missing-and-stale-approved-collection",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "tampered-evidence",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "active-operation-no-duplicate",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "external-blocker",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "closed-implementation-boundary",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "exact-action-and-scope-expansion",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "select-pending-gate-within-stage",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "retry-exhaustion",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "amendment-proposal-and-adoption",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "append-only-learning-does-not-expand-scope",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "hook-pass",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "hook-veto",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "hook-fail",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "hook-credential",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "hook-recursion",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "optional-hook-failure",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "jev-controlled-uncertain",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "jev-controlled-contradicted",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "jev-controlled-malformed",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "jev-controlled-model-mismatch",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "jev-transient-retry-exhaustion",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "jev-live-frozen-calibration",
+        "passed": false,
+        "detail": "Expected COMPLETE, observed REVIEW_REQUIRED: [{\"code\":\"SEMANTIC_UNCERTAIN\",\"criterion_id\":\"acceptance\",\"message\":\"Semantic probabilities do not establish required confidence\"}]"
+      },
+      {
+        "id": "real-local-hook-bridge",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "native-package-install-and-skills",
+        "passed": true,
+        "detail": "Observed expected production-path outcome"
+      },
+      {
+        "id": "real-uar-import",
+        "passed": false,
+        "detail": "Real UAR adoption withheld: frozen JEV calibration did not pass"
+      }
+    ],
+    "passed": 27,
+    "total": 29,
+    "binary_sha256": "727b54f6c81539898f6dc6501835f6d8dd304d48a6f52d9176b1c3c5cb3465bb",
+    "node": "v24.22.0",
+    "platform": "darwin-arm64"
+  },
+  "semantic_calibration": {
+    "schema_version": 1,
+    "observations": [
+      {
+        "id": "supported",
+        "expected": "supported",
+        "decision": "REVIEW_REQUIRED",
+        "support": 0.8,
+        "contradiction": 0.02,
+        "request_digest": "afefe6ae296ce1300bf05cd15cb07e449563db54a07237e0596795aaba338eaf",
+        "resumed": true
+      },
+      {
+        "id": "contradicted",
+        "expected": "contradicted",
+        "decision": "REVIEW_REQUIRED",
+        "support": 0.01,
+        "contradiction": 0.99,
+        "request_digest": "2540aa201d3425c610bc450f6713bd5346eb7aa6231654432ed929ecb8b06498",
+        "resumed": true
+      },
+      {
+        "id": "uncertain",
+        "expected": "uncertain",
+        "decision": "REVIEW_REQUIRED",
+        "support": 0.01,
+        "contradiction": 0.4,
+        "request_digest": "c2350cc0f8a27abe4f685fc5b249b14bfb17048e4261c28501bee8c1dfec1e93",
+        "resumed": true
+      }
+    ],
+    "failures": [
+      "supported: Expected COMPLETE, observed REVIEW_REQUIRED: [{\"code\":\"SEMANTIC_UNCERTAIN\",\"criterion_id\":\"acceptance\",\"message\":\"Semantic probabilities do not establish required confidence\"}]"
+    ]
+  },
+  "cache_continuation": "All three original judgments reused; unique-current receipt refresh retained semantic verdict and attempt count. Calibration still fails on original0.80.",
+  "native_host": {
+    "host": "Claude Code",
+    "version": "2.1.301",
+    "event": "Stop",
+    "plugin_loaded": true,
+    "hook_exit_code": 0,
+    "host_exit_code": 0,
+    "engine_decision": "BLOCKED",
+    "phase_complete": false,
+    "tool_interception": "unverified"
+  },
+  "review": {
+    "initial_critical": 3,
+    "original_critical_resolved": 3,
+    "final_medium": 1,
+    "medium_repair": "unique current receipt and unchanged valid decision assertion",
+    "final_review_round": 2,
+    "additional_implementation_review": false,
+    "independence": "fresh-context native; cross-model unverified",
+    "sycophancy_score": 0.01785714365541935
+  },
+  "uar": {
+    "imported": true,
+    "implementation_items": 19,
+    "image_groups": 6,
+    "image_scenarios": 76,
+    "native_supplements": 4,
+    "adopted": false,
+    "evaluated": false,
+    "release_published": false,
+    "mandatory_external_prerequisite": "Genuine qualified-supervisor setup unavailable"
+  },
+  "original_receipts": [
+    {
+      "private_original": "acceptance-01/receipt.json",
+      "sha256": "6cf0fe599cb79c5833a4c824ecdbf8f87e52f09e008bb4bb74accada62df4476"
+    },
+    {
+      "private_original": "acceptance-02/receipt.json",
+      "sha256": "0caddc1293dec103399789914e9bcdad13ab7b91e038654d44b76a727f8c5841"
+    },
+    {
+      "private_original": "acceptance-03/receipt.json",
+      "sha256": "6479b746f3300859878175cc589c986032f8213a5d17e8da4944cd347ee8097c"
+    },
+    {
+      "private_original": "native-claude/command.json",
+      "sha256": "ddd1421c0ee9df40158cbf3d374e4a65619b81265c10c00a6431d2da04b3fd7e"
+    },
+    {
+      "private_original": "native-claude/stdout.jsonl",
+      "sha256": "2a195edd97f709cd3a10f30469d4435cbe8bbe1ed3d11c0cda4c8a23fc259d01"
+    }
+  ]
+}

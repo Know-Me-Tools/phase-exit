@@ -1,0 +1,36 @@
+{
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "file": "crates/phase-exit-core/src/engine.rs",
+      "line": 69,
+      "claim": "A completed gate can permanently prevent authorization of another gate in the same stage.",
+      "evidence": "eligible selects every criterion in action.stage rather than the criteria established by that action. With approved actions A then B in one stage, a passing command_success(A) receipt and missing command_success(B) receipt make both actions eligible. The candidate selection at line 152 always selects A, and authorize at lines 180-182 accepts only that candidate. Repeating A never changes this selection, while requesting B is denied. This violates S2's exact next authorized action and missing-evidence collection behavior and can repeatedly select a passing gate instead of the gate whose evidence is missing.",
+      "suggested_fix": "Bind collection eligibility to the criteria that the specific approved action can establish, using command_success.action_id where available and explicit adopted coverage for other predicates. Select an action only when its own coverage needs collection and its applicable dependencies are satisfied. Preserve the existing complete-implementation and prerequisite checks. Cover the two-actions/one-stage case within the already approved exact-action acceptance area."
+    },
+    {
+      "severity": "CRITICAL",
+      "file": "tests/acceptance.ts",
+      "line": 275,
+      "claim": "Live calibration accepts transport and protocol failures as successful contradicted and uncertain judgments.",
+      "evidence": "The contradicted and uncertain frozen examples are checked only for REVIEW_REQUIRED and phase_complete=false. engine.rs lines 140-142 returns REVIEW_REQUIRED both for SEMANTIC_UNCERTAIN and for JEV_UNAVAILABLE, while line 137 produces the distinct contradiction finding. Thus a live supported example followed by permanent HTTP failures or model-mismatched responses for the other two examples passes jev-live-frozen-calibration. The condition at acceptance.ts line 334 then permits UAR adoption. S3 and the approved JEV acceptance cases require observed supported, contradicted and uncertain outcomes before threshold adoption, not merely two non-success decisions.",
+      "suggested_fix": "Use each frozen example's expected_semantic_outcome to assert its exact semantic reason and a retained live, validated judgment with the corresponding probabilities. Treat JEV_UNAVAILABLE, malformed responses and model mismatch as calibration failures. Keep the existing no-resampling check and frozen thresholds."
+    },
+    {
+      "severity": "CRITICAL",
+      "file": "crates/phase-exit-core/src/jev.rs",
+      "line": 98,
+      "claim": "Refreshing receipt metadata resamples the same uncertain semantic input.",
+      "evidence": "The cache key includes digest(receipt), which incorporates id, captured_at, artifact_path and supersedes. lifecycle.rs import_evidence permits a new receipt to supersede the old same-criterion receipt while retaining the exact same artifact hash and contract identity. Such a receipt produces the identical JEV request at lines 90-96 but a different cache key, so judge calls transport again at line 106 instead of using the existing uncertain terminal judgment. This is reachable through normal evidence import without modifying stored artifacts or bypassing adoption. It contradicts S3's prohibition on resampling semantic uncertainty and the documented claim that the same evidence cannot trigger repeated sampling.",
+      "suggested_fix": "Key semantic sampling by the canonical request and material evidence/policy identity, and retain receipt IDs and refresh metadata as provenance references to that cached judgment. A new wrapper around unchanged evidence must reuse its terminal semantic result; require materially changed evidence or an explicitly adopted policy revision before another sample."
+    }
+  ],
+  "checked_classes": [
+    "Inspected contract validation, adoption lineage, immutable storage, evidence supersession, dependency evaluation, stage/phase separation and exact action authorization against S1-S2.",
+    "Inspected pinned JEV requests, response validation, bounded transient retries, cache identity, credential redaction and calibration acceptance against S3.",
+    "Inspected Rust-to-Node hooks, module snapshots, required/optional outcomes, recursion markers and restricted hook environments against S4; treated trusted installed code and privileged local bypass as the documented limitations.",
+    "Inspected native adapter source, stop/continuation fingerprints, manifests, packaging/install source and canonical skills against S5; no host compatibility or compilation claim was inferred from source.",
+    "Inspected the recorded implementation inventory and bounded acceptance program against S6. No tests, compiler, build, install, schema validator or product API probe was executed during this review.",
+    "Inspected UAR importer, freshness hook, scenario inventory and adapter documentation against S7, including read-only collection, original identity bindings, explicit adoption mapping, running observations and mandatory supervisor blocker. Producer session history was not read."
+  ]
+}

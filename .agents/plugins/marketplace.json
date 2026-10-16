@@ -1,0 +1,5 @@
+{
+  "name": "know-me-tools-phase-exit",
+  "interface": { "displayName": "Know-Me-Tools Phase Exit" },
+  "plugins": [{ "name": "phase-exit", "source": { "source": "local", "path": "./plugins/codex" } }]
+}

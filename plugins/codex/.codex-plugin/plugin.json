@@ -1,0 +1,8 @@
+{
+  "name": "phase-exit",
+  "version": "0.1.0",
+  "description": "Evidence-backed phase exit and exact adopted action hooks. Requires local hook trust.",
+  "skills": "./skills",
+  "hooks": "./hooks/hooks.json",
+  "interface": { "displayName": "Phase Exit", "shortDescription": "Evidence-backed phase exit" }
+}

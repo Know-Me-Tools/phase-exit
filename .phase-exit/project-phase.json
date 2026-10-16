@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "phase": "first-uar-example",
+  "stage": "review_required",
+  "boundary": "open",
+  "approved_by": "operator instruction: PLEASE IMPLEMENT THIS PLAN, 2026-10-16",
+  "tasks": [
+    {
+      "id": "LEAD-1",
+      "owner": "lead",
+      "deliverable": "repository, shared protocol, approved plan and ledger",
+      "status": "complete"
+    },
+    {
+      "id": "RUST-1",
+      "owner": "rust",
+      "deliverable": "Rust engine, CLI, typed contracts, JEV, immutable evidence and amendments",
+      "status": "complete"
+    },
+    {
+      "id": "TS-1",
+      "owner": "typescript",
+      "deliverable": "Node hooks, five native harness packages, portable packaging and install",
+      "status": "complete"
+    },
+    {
+      "id": "UAR-1",
+      "owner": "uar-adapter",
+      "deliverable": "read-only UAR importer and explicit criterion adoption map",
+      "status": "complete"
+    },
+    {
+      "id": "DOC-1",
+      "owner": "lead",
+      "deliverable": "Agent Skills, operational docs, research, follow-up issue drafts",
+      "status": "complete"
+    },
+    {
+      "id": "FIXTURE-1",
+      "owner": "lead",
+      "deliverable": "bounded end-to-end acceptance fixtures and orchestrator",
+      "status": "complete"
+    },
+    {
+      "id": "INVENTORY-1",
+      "owner": "lead",
+      "deliverable": "complete source inventory before first check",
+      "status": "complete"
+    },
+    {
+      "id": "REVIEW-1",
+      "owner": "independent",
+      "deliverable": "isolated completed-artifact review",
+      "status": "complete_with_warning"
+    },
+    {
+      "id": "ACCEPT-1",
+      "owner": "lead",
+      "deliverable": "serialized real CLI, JEV, local hook and UAR import acceptance",
+      "status": "failed_calibration"
+    },
+    {
+      "id": "PUBLISH-1",
+      "owner": "lead",
+      "deliverable": "public source and usable local skill/plugin packages, truthful receipts",
+      "status": "withheld_pending_acceptance"
+    },
+    {
+      "id": "REPAIR-1",
+      "owner": "team",
+      "deliverable": "Three initial review findings and three TypeScript compiler errors as one cohort",
+      "status": "complete"
+    },
+    {
+      "id": "REPAIR-2",
+      "owner": "lead",
+      "deliverable": "Collect every frozen semantic example after failure without resampling earlier evidence; preserve original receipt",
+      "status": "complete"
+    },
+    {
+      "id": "REPAIR-3",
+      "owner": "lead",
+      "deliverable": "Resolve final review receipt-chain warning without semantic resampling",
+      "status": "complete"
+    },
+    {
+      "id": "AMENDMENT-1",
+      "owner": "lead",
+      "deliverable": "Operator-requested calibration proposal; review only, no adoption",
+      "status": "reviewed_not_adopted"
+    }
+  ],
+  "constraints": {
+    "node": "24.22.0",
+    "typescript": "7.0.2",
+    "model": "jev-1.14.0",
+    "model_channel": "preview",
+    "windows_qualification": false,
+    "mcp_implementation": false
+  },
+  "known_external_blocker": "UAR genuine qualified supervisor setup is unavailable; no release success without its required evidence.",
+  "implementation_inventory": ".phase-exit/implementation-inventory-04.json",
+  "repair_cohort": "calibration-observation-collection",
+  "calibration_status": "REVIEW_REQUIRED",
+  "next_authorized_action": "Operator review of the proposed calibration amendment; no adoption, new semantic sample, or UAR publication is authorized.",
+  "source_publication": "withheld_pending_acceptance; local checkpoint only"
+}

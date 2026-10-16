@@ -1,0 +1,7 @@
+{
+  "name": "phase-exit",
+  "version": "0.1.0",
+  "description": "Evidence-backed stage and phase exit with bounded continuation and exact action authorization.",
+  "author": { "name": "Know-Me-Tools" },
+  "license": "Apache-2.0"
+}

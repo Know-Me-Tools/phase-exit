@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "frozen_by": "approved first-uar-example semantic calibration set",
+  "model": "jev-1.14.0",
+  "model_channel": "preview",
+  "support_threshold": 0.95,
+  "contradiction_threshold": 0.05,
+  "examples": [
+    {
+      "id": "supported",
+      "criterion": "The recorded command finished successfully with exit code zero.",
+      "evidence": {"statement": "The original terminal receipt records command completion with exit code 0."},
+      "expected_semantic_outcome": "supported"
+    },
+    {
+      "id": "contradicted",
+      "criterion": "The recorded command finished successfully with exit code zero.",
+      "evidence": {"statement": "The original terminal receipt records command completion with exit code 7 and a failed acceptance assertion."},
+      "expected_semantic_outcome": "contradicted"
+    },
+    {
+      "id": "uncertain",
+      "criterion": "The recorded command finished successfully with exit code zero.",
+      "evidence": {"statement": "The command started. No terminal result or exit code has been observed."},
+      "expected_semantic_outcome": "uncertain"
+    }
+  ]
+}

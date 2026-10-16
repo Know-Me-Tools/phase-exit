@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "document_kind": "sanitized_source_observation_not_acceptance_receipt",
+  "phase": "uar-outstanding-issues-v1-1-1",
+  "observed_date": "2026-10-16",
+  "provenance": {
+    "inventory": ".kbd-orchestrator/phases/uar-outstanding-issues-v1-1-1/implementation-inventory-20261016-03.json",
+    "scope_authority": ".kbd-orchestrator/phases/uar-outstanding-issues-v1-1-1/execution-ledger.json",
+    "scenario_sources": [
+      "scripts/release/uar_1_1_1_runtime.py",
+      "scripts/release/uar_1_1_1_credentials.py",
+      "scripts/release/uar_1_1_1_recovery.py",
+      "scripts/release/uar_1_1_1_acceptance.py"
+    ]
+  },
+  "inventory_original_count": 17,
+  "inventory_listed_items": 19,
+  "approved_groups": ["binding", "streams", "mcp-outcomes", "credentials", "recovery", "combined"],
+  "image_scenario_count": 76,
+  "native_supplement_count": 4,
+  "adoption": "pending_explicit_operator_reference",
+  "qualified_supervisor": "unavailable",
+  "release": "blocked",
+  "phase_complete": false,
+  "limitations": [
+    "This file is a sanitized source observation and cannot be supplied as Rust acceptance evidence.",
+    "Original corrective review reached its cap and did not review R8; stronger judge independence is unproven.",
+    "Local acceptance was active at source observation; no result is inferred from progress.",
+    "Raw logs, private runtime paths and credentials are excluded from this example."
+  ]
+}

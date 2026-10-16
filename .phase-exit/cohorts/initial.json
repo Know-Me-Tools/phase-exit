@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "status": "implemented_pending_acceptance",
+  "review_findings": 3,
+  "typescript_diagnostics": 3,
+  "repairs": [
+    "Explicit action coverage and pending sibling-gate selection",
+    "Semantic sample identity separate from full provenance fingerprint",
+    "Calibration requires actual semantic classes and retained live judgments",
+    "IPC callback typing and explicit child environment type",
+    "Original S4 generated readable contract summary and amendment diff omission"
+  ],
+  "checks_run_during_repairs": [],
+  "next": "Affected compiler gates, package generation, one serialized acceptance program; final corrective review after final source"
+}

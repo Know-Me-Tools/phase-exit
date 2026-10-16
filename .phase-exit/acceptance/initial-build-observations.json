@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "phase": "first-uar-example",
+  "inventory": "implementation-inventory-01.json",
+  "state": "collecting_failure_cohort",
+  "observations": [
+    {
+      "command": [
+        "node",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "v26.5.0",
+      "disposition": "Use official checksum-verified24.22.0 private binary"
+    },
+    {
+      "command": [
+        "node24.22.0",
+        "npm-cli.js",
+        "install",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit_code": 1,
+      "error": "ENOENT in shared npm cache",
+      "disposition": "Same installation succeeded with isolated project cache;295packages"
+    },
+    {
+      "command": [
+        ".phase-exit/private/toolchain/bin/node",
+        "node_modules/typescript/bin/tsc",
+        "-p",
+        "tsconfig.json"
+      ],
+      "exit_code": 2,
+      "diagnostics": [
+        "packages/hooks/worker.ts(13,79): TS2345 callback not assignable to SendHandle",
+        "packages/hooks/worker.ts(15,37): TS2345 callback not assignable to SendHandle",
+        "scripts/with-jev-key.ts(30,10): TS7053 NODE_OPTIONS cannot index inferred env type"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "stdout": "Finished dev profile [unoptimized + debuginfo] target(s) in1m17s",
+      "artifact": "target/debug/phase-exit",
+      "claim": "Compilation only; acceptance not run"
+    }
+  ],
+  "review_dispatch": {
+    "first_role": "uar-verifier",
+    "result": "role scope refused before product inspection",
+    "disposition": "Fresh default reviewer dispatched with same artifact-only criteria; no product review round consumed"
+  }
+}

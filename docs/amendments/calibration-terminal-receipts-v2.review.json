@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "amendment_id": "calibration-terminal-receipts-v2",
+  "review_scope": "Isolated proposal review only; not an implementation acceptance review or adoption.",
+  "verdict": "REVISION_NEEDED",
+  "adoption_status": "not_adopted",
+  "cross_model_independence": "unverified",
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "medium",
+      "title": "Distinguish expected uncertainty from a calibration failure",
+      "evidence": [
+        {
+          "path": "docs/amendments/calibration-terminal-receipts-v2.md",
+          "location": "Invalidation and bounded execution",
+          "observation": "The proposal says all three examples become unevaluated and then says 'Semantic uncertainty stops again' without distinguishing the expected uncertain example from an unexpected uncertain outcome."
+        },
+        {
+          "path": "docs/amendments/calibration-terminal-receipts-v2.json",
+          "location": "examples[id=uncertain] and invalidation_map.uar_adoption",
+          "observation": "The controlled incomplete observation deliberately expects uncertain, while UAR adoption is withheld until calibration passes. No explicit calibration pass predicate resolves how this expected uncertainty interacts with the unconditional stop wording."
+        },
+        {
+          "path": ".phase-exit/private/acceptance-02/calibration-observations.json",
+          "location": "observations and failures",
+          "observation": "The uncertain example has support 0.01, contradiction 0.4 and decision REVIEW_REQUIRED, but the failures list contains only the supported example. Thus a correct uncertain calibration example is distinct from a calibration failure."
+        }
+      ],
+      "suggested_fix": "State explicitly that the three calibration cases must match their expected semantic classes under the unchanged classification policy. Expected uncertain is a successful calibration observation but never authorizes completion of its command criterion. Unexpected uncertainty on the supported or contradicted example stops calibration with REVIEW_REQUIRED, preserves the original response and permits no semantic resampling. Name the existing classification policy or spell out its unchanged class boundaries; do not introduce new thresholds."
+    }
+  ],
+  "observations": [
+    "The proposal preserves the original frozen fixture as authority, identifies itself as proposed_not_adopted, requires explicit operator adoption and records no adoption.",
+    "The proposed model, preview channel, support threshold 0.95, contradiction threshold 0.05 and transient retry limit two remain unchanged. Provenance ambiguity is presented as an unverified explanation rather than a diagnosis of the 0.80 result.",
+    "The positive and negative packets match the retained evidence records' receipt hashes, runner origin, artifact identity and captured time. Their referenced command receipt contents record exit codes zero and seven respectively, with matching stdout and stderr digests.",
+    "The incomplete observation is explicitly controlled and does not falsely claim that either completed process remains running.",
+    "The proposal preserves historical failures and caches, bounds any post-adoption evaluation to one new semantic sample per changed example, and does not upgrade UAR acceptance or waive deterministic prerequisites.",
+    "The existing positive support 0.80 failure remains unchanged. This review authorizes no new sample."
+  ],
+  "inspection": {
+    "method": "Read the allowed specification S3, original calibration fixture, amendment Markdown and JSON, calibration observations, two original evidence indexes and their referenced terminal command receipts. Compare the visible fields directly.",
+    "commands_run": [
+      "sed -n '/^## .*S3/,/^## /p' docs/specification.md",
+      "cat docs/amendments/calibration-terminal-receipts-v2.md docs/amendments/calibration-terminal-receipts-v2.json fixtures/semantic-examples.json .phase-exit/private/acceptance-02/calibration-observations.json",
+      "cat .phase-exit/private/acceptance-01/complete/evidence.json .phase-exit/private/acceptance-01/failed/evidence.json",
+      "cat .phase-exit/private/acceptance-01/complete/command-fdc3d28f-af77-4bba-a485-9f93d695a024.json .phase-exit/private/acceptance-01/failed/command-11ef09f5-06cb-4978-9ef0-888cacbc4007.json"
+    ],
+    "observed_result": "All four source-read commands exited zero and returned the requested artifacts.",
+    "tests_builds_api_calls": 0,
+    "limitations": [
+      "No cryptographic hashes were recomputed; provenance inspection establishes agreement with retained receipt records and contents, not independent runner authentication.",
+      "The command_identity_sha256 derivation is not specified in the reviewed artifacts and was not independently reconstructed.",
+      "The proposed revision has not been evaluated; future semantic performance remains unverified.",
+      "Only the permitted artifacts were inspected; no producer chat or history was read."
+    ]
+  },
+  "changes": {
+    "owned_output": "docs/amendments/calibration-terminal-receipts-v2.review.json",
+    "other_files_changed": [],
+    "unrequested_additions": [],
+    "guards_added": []
+  }
+}

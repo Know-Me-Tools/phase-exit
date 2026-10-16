@@ -1,0 +1,16 @@
+[workspace]
+members = ["crates/phase-exit-core", "crates/phase-exit-cli"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/Know-Me-Tools/phase-exit"
+
+[workspace.dependencies]
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.145"
+sha2 = "=0.10.9"
+thiserror = "=2.0.17"
+reqwest = { version = "=0.12.24", default-features = false, features = ["blocking", "json", "rustls-tls"] }

@@ -1,0 +1,23 @@
+{
+  "name": "@know-me-tools/phase-exit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": { "node": "24.22.0" },
+  "scripts": {
+    "build:no-tests": "tsc -p tsconfig.json",
+    "package:no-tests": "node dist/scripts/package.js",
+    "install:plugin": "node dist/scripts/install.js",
+    "install:skills": "node dist/scripts/install-skills.js"
+  },
+  "devDependencies": {
+    "@opencode/plugin": "2.0.31",
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-agent": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@types/node": "24.10.1",
+    "typescript": "7.0.2"
+  }
+}
