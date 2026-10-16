@@ -5,9 +5,12 @@ contract. A Rust engine checks artifact identity and evidence predicates; option
 TypeSafe **`jev-1.14.0` preview** judgments answer narrowly defined semantic
 questions. Node hooks and Agent Skills expose the decision to coding hosts.
 
-**Preview implementation; acceptance is not complete.** The frozen JEV calibration
-returned support 0.80 for its positive example against the required 0.95. UAR
-adoption is withheld. See [observed results](docs/acceptance-results.md).
+**Published preview for use in the UAR v1.1.1 phase.** Acceptance is still in
+progress. The original calibration returned support0.80 against the required0.95.
+The operator has adopted the reviewed terminal-receipt amendment; its affected
+gates must pass before UAR adoption and release readiness can be claimed.
+See [observed results](docs/acceptance-results.md) and the
+[reviewed amendment](docs/amendments/calibration-terminal-receipts-v2.md).
 The authoritative status is [.phase-exit/project-phase.json](.phase-exit/project-phase.json).
 
 ## What the decision means
@@ -78,6 +81,53 @@ The literal-profile launcher is `node dist/scripts/with-jev-key.js -- EXECUTABLE
 ARGUMENTS`. It defaults to the designated assignment in `~/.bash_profile`, prefers
 an existing process key, and accepts `--profile FILE` before `--`. A profile is
 read as data. Shell substitutions and profile execution are unsupported.
+
+### Use the skills and engine
+
+Install the canonical skills into your host's discovery directory with
+`node dist/scripts/install-skills.js SKILL_ROOT`, or install the matching native
+package through its repository marketplace. Start with `phase-contract` to map
+the approved assessment, analysis, specification and plan to the versioned
+contract. Read the generated summary before explicit adoption. Use `phase-exit`
+to import observations and evaluate the current stage.
+
+These invocations show the CLI lifecycle; replace the absolute file paths with
+your reviewed records. The adoption record contains the exact contract and review
+digests returned by the first commands, as documented in the CLI interface.
+
+```text
+target/debug/phase-exit contract import --contract /absolute/contract.json --state-dir /absolute/state
+target/debug/phase-exit contract inspect --contract /absolute/contract.json
+target/debug/phase-exit contract freeze --contract /absolute/contract.json --reviewer operator-review --rationale "Reviewed approved phase scope" --state-dir /absolute/state
+target/debug/phase-exit contract adopt --contract /absolute/contract.json --adoption /absolute/adoption.json --state-dir /absolute/state
+target/debug/phase-exit evaluate --contract /absolute/contract.json --evidence /absolute/evidence.json --stage acceptance --state-dir /absolute/state
+```
+
+Configure `PHASE_EXIT_HOOK_RUNNER` to the absolute compiled
+`dist/packages/hooks/runner.js` when the contract includes Node extensions. Native
+hosts also need the binary, contract, evidence, stage and state paths described in
+the [adapter interface](docs/typescript-interface.md). Credentials belong only in
+the runtime environment. The engine evaluates evidence and authorizes exact actions;
+the trusted host executes an authorized action and records its terminal result.
+
+### Use it on real work and revise it in place
+
+UAR v1.1.1 is the first real case. Its importer retains original records, reconciles
+the criterion inventory and exposes the remaining action or blocker. Start with
+[the UAR example](examples/uar/README.md); retain private snapshots outside Git.
+Only all required local gates can authorize UAR publication, and both published
+child-image programs precede release receipts.
+
+When real use reveals a Phase Exit defect, retain the failing receipt, record the
+discovery and affected criterion, and repair it in this repository. Finish the
+whole observed repair cohort before rerunning only affected gates. Push the fix
+with its evidence and continue the original phase. Changes to the contract's
+semantics, evidence requirements, model, thresholds or mandatory hooks require an
+explicitly adopted amendment. A code repair must not silently add release scope.
+
+The original failure, reviewed proposal and separate adoption record remain in
+history. Publishing this preview makes the tool usable for this process; it does
+not certify Phase Exit or UAR while their required gates remain incomplete.
 
 ## First delivery boundary
 

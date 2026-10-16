@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "phase": "first-uar-example",
-  "stage": "review_required",
-  "boundary": "open",
+  "stage": "execute",
+  "boundary": "closed",
   "approved_by": "operator instruction: PLEASE IMPLEMENT THIS PLAN, 2026-10-16",
   "tasks": [
     {
@@ -63,7 +63,7 @@
       "id": "PUBLISH-1",
       "owner": "lead",
       "deliverable": "public source and usable local skill/plugin packages, truthful receipts",
-      "status": "withheld_pending_acceptance"
+      "status": "source_push_authorized_before_use"
     },
     {
       "id": "REPAIR-1",
@@ -87,7 +87,7 @@
       "id": "AMENDMENT-1",
       "owner": "lead",
       "deliverable": "Operator-requested calibration proposal; review only, no adoption",
-      "status": "reviewed_not_adopted"
+      "status": "adopted_mapping_pending"
     }
   ],
   "constraints": {
@@ -101,7 +101,8 @@
   "known_external_blocker": "UAR genuine qualified supervisor setup is unavailable; no release success without its required evidence.",
   "implementation_inventory": ".phase-exit/implementation-inventory-04.json",
   "repair_cohort": "calibration-observation-collection",
-  "calibration_status": "REVIEW_REQUIRED",
-  "next_authorized_action": "Operator review of the proposed calibration amendment; no adoption, new semantic sample, or UAR publication is authorized.",
-  "source_publication": "withheld_pending_acceptance; local checkpoint only"
+  "calibration_status": "ADOPTED_REVISION_UNEVALUATED",
+  "next_authorized_action": "Push README and preview source, implement adopted terminal-receipt calibration mapping, record full inventory, then run only affected gates.",
+  "source_publication": "Operator explicitly authorized preview source push before use; certification remains pending.",
+  "adoption_record": ".phase-exit/adoptions/calibration-terminal-receipts-v2.json"
 }

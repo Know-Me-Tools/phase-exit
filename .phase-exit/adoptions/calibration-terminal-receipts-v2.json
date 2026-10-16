@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "kind": "calibration_amendment_adoption",
+  "amendment_id": "calibration-terminal-receipts-v2",
+  "amendment_path": "docs/amendments/calibration-terminal-receipts-v2.json",
+  "amendment_sha256": "47290ecd97da4a417368a2196a1b679ca97872ba9177d305c66f6ce078e20100",
+  "review_path": "docs/amendments/calibration-terminal-receipts-v2.review-2.json",
+  "review_sha256": "b350e3565066094a9ee191f6d2b464c4fb4e0af0750944c7d769aa28f6cd41ae",
+  "parent_examples_sha256": "c7d381a7982e1d6f833861a89252efd137f7d9a92cc99518d70c700ddd285f54",
+  "operator": "gqadonis",
+  "authorization": "Adopt the reviewed calibration amendment and continue. Keep the model and thresholds unchanged, rerun only the affected gates, then finish Phase Exit and resume UAR v1.1.1. Publish only after every required gate passes.",
+  "source_publication_authorization": "Make sure to write up the README.md and commit and push the phase exit skill work first and then use it. Revise it in place if real use reveals a defect, and continue.",
+  "adopted_at": "2026-10-16T13:57:12.316Z",
+  "model": "jev-1.14.0",
+  "channel": "preview",
+  "support_threshold": 0.95,
+  "contradiction_threshold": 0.05,
+  "implementation_status": "mapping_pending",
+  "affected_gates": [
+    "TypeScript compilation of amended calibration mapping",
+    "jev-live-frozen-calibration",
+    "real-uar-import"
+  ],
+  "preserved_gates": "Previously passing deterministic and package cases remain observations for unchanged production source; no passing case is rerun solely for this amendment.",
+  "uar_publication": "Requires all mandatory local gates, then both published child-image programs and receipts."
+}

@@ -61,3 +61,13 @@ Last observed: binding failed; streams started. Preserve the operation until its
 terminal result, then collect the entire failure cohort before source repairs.
 The genuine qualified-supervisor setup remains a mandatory external blocker.
 No know-me mutation, cancelled-program revival, new UAR build or release occurred.
+
+## Resumption authorization
+
+The operator has now explicitly adopted the reviewed calibration amendment and
+instructed the lead to write the README, commit and push Phase Exit before using
+it on UAR. See `adoptions/calibration-terminal-receipts-v2.json`. The original
+proposal and historical observations above remain preserved. The full production
+boundary is closed while the adopted mapping is implemented; then only affected
+gates run. Preview source publication is authorized; product certification and
+UAR release remain dependent on their mandatory gates.

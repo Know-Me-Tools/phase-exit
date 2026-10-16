@@ -52,3 +52,13 @@ classification and no mandatory correction.
 
 The uncomfortable outcome: working stop behavior does not turn this incomplete
 delivery into a completed UAR release. No v1.1.1 publication is authorized.
+
+## Subsequent operator adoption
+
+The operator subsequently adopted the reviewed terminal-receipt amendment and
+authorized committing and pushing the Phase Exit preview before using it. The
+separate record is `.phase-exit/adoptions/calibration-terminal-receipts-v2.json`.
+The original proposal, reviews and failed probabilities above remain historical
+artifacts. Its new calibration mapping and affected gates are pending. Model and
+thresholds are unchanged. UAR release publication still requires every mandatory
+gate; preview source publication does not establish certification.

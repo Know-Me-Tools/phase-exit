@@ -24,3 +24,5 @@ for future dispatch, not retrospective authorization tokens. Preserve the truste
 runner limitation instead of silently adding a new evidence requirement.
 
 2026-10-16: Frozen positive JEV calibration support0.80 is retained against0.95. Operator authorized proposal preparation/review only. Terminal-receipts-v2 retains jev-1.14.0 preview and thresholds, uses actual terminal receipt fields, specifies class outcomes and invalidation; final isolated proposal review found no remaining findings. No adoption or new samples against proposal. Source publication and UAR release remain withheld.
+
+2026-10-16: Operator explicitly adopted reviewed terminal-receipts-v2 calibration and authorized README/source commit and push before using Phase Exit. Model jev-1.14.0 preview and0.95/0.05 thresholds unchanged. Source preview publication is authorized independently of pending product certification. UAR release still requires every mandatory gate.
