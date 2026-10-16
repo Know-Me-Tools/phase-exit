@@ -22,10 +22,21 @@
   "qualified_supervisor": "unavailable",
   "release": "blocked",
   "phase_complete": false,
+  "later_observation": {
+    "document_kind": "sanitized_terminal_and_repair_source_observation_not_acceptance_receipt",
+    "local_02": "terminal_failed_all_six_groups",
+    "repair_item": "R9",
+    "renewed_boundary_item": "L7",
+    "implementation_boundary": "closed",
+    "current_inventory_selection": null,
+    "next_inventory": "implementation-inventory-20261016-04.json",
+    "next_inventory_status": "not_adopted_by_this_example",
+    "existing_adopted_contract": "retained_immutable_requires_explicit_revision_and_adoption"
+  },
   "limitations": [
     "This file is a sanitized source observation and cannot be supplied as Rust acceptance evidence.",
     "Original corrective review reached its cap and did not review R8; stronger judge independence is unproven.",
-    "Local acceptance was active at source observation; no result is inferred from progress.",
+    "Local acceptance was active at the original source observation; the later terminal failure and repair boundary are recorded separately.",
     "Raw logs, private runtime paths and credentials are excluded from this example."
   ]
 }

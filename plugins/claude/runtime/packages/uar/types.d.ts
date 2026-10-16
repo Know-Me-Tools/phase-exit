@@ -126,12 +126,17 @@ export interface ReceiptInput {
     manifest: string;
     receipt: string;
 }
+export interface InventoryInput {
+    path: string;
+    sha256: string;
+}
 export interface ImportOptions {
     root: string;
     output: string;
     receipts?: readonly ReceiptInput[];
     adoptionReference?: string;
     activeOperationObservation?: string;
+    inventory?: InventoryInput;
 }
 export interface ImportOutput {
     contract: string;

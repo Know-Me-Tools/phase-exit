@@ -16,6 +16,8 @@ import { importUarSnapshot } from './dist/packages/uar/index.js';
 const result = await importUarSnapshot({
   root: suppliedUarRoot,
   output: newPrivateOutputDirectory,
+  // Optional explicit selection. Omission retains historical inventory03.
+  inventory: { path: suppliedInventoryPath, sha256: suppliedExactByteSha256Hex },
   // Optional: default reads the retained manifests under evidence/gates.
   receipts: [{ manifest: suppliedManifestPath, receipt: suppliedReceiptPath }],
   // Supply only a real operator-approved reference; omission leaves it pending.
@@ -27,9 +29,17 @@ const result = await importUarSnapshot({
 
 ```text
 node dist/packages/uar/cli.js --root UAR_ROOT --output NEW_PRIVATE_DIRECTORY
+node dist/packages/uar/cli.js --root UAR_ROOT --output NEW_PRIVATE_DIRECTORY --inventory INVENTORY_PATH --inventory-sha256 HEX
 node dist/packages/uar/cli.js --root UAR_ROOT --output NEW_PRIVATE_DIRECTORY --receipt MANIFEST RECEIPT --adoption-reference OPERATOR_REFERENCE
 node dist/packages/uar/cli.js --root UAR_ROOT --output NEW_PRIVATE_DIRECTORY --active-operation-observation HOST_OBSERVATION
 ```
+
+`--inventory` and `--inventory-sha256` must occur together. The digest is64
+lowercase hexadecimal characters without a prefix, computed from exact supplied
+inventory bytes. Relative inventory paths resolve against UAR root; the resolved
+path must stay inside the active phase directory. There is no automatic latest
+inventory discovery. A missing explicit file or digest mismatch fails collection.
+`InventoryInput` is exported with the other public types.
 
 `--receipt` accepts two paths and may repeat. Output's parent must exist; output
 itself must not exist and must be outside UAR. The importer resolves the parent
@@ -59,6 +69,34 @@ Receipt versions missing in historical formats are accepted only when the
 explicit bound manifest provides version1.1.1 and the remaining artifact
 identities agree. No filename-derived version or success is inferred.
 
+A missing receipt file is an absent observation, not a fabricated runner result.
+The importer still captures the real manifest and its referenced inventory. Only
+an actual canonical `evidence/gates/local.json` with the exact current inventory
+digest, source/fixture trees, strict local baseline commit, phase/version/platform,
+six approved groups and canonical `evidence_root/receipt.json` path can expose the
+existing fixed local collection action before its first run. Both implementation
+boundaries and all implementation evidence must already be complete. A present
+malformed, non-object, unreadable or changing receipt fails collection instead of
+being treated as absent.
+
+`snapshot.pending_manifests` records the manifest hash, intended original receipt
+path and explicit `receipt_observation:"absent"`, with no image observation,
+started state, receipt hash or runtime artifact identity invented. For an eligible
+canonical local manifest with no current observed local receipt, local assertions
+remain false and the importer emits no evidence records for that stage. The
+engine therefore sees missing observations and can return `CONTINUE` for the
+already approved collection action after explicit contract adoption. Existing
+failed receipts retain their failed assertions; omission does not convert a
+failure into permission to retry. `unobserved_stages` exposes the omitted-record
+scope. Noncanonical or stale pending manifests expose no collection action.
+
+The freshness hook checks the pending manifest hash and requires the receipt to
+remain absent. If a receipt appears during collection, import fails; if it appears
+afterward, evaluation vetoes until recollection and explicit revision/adoption.
+This prevents the old missing snapshot from authorizing a duplicate collection.
+An absent published receipt provides no publication provenance and exposes no
+published action; the existing strict publication identity requirements remain.
+
 The importer implements UAR's actual `source_identity` algorithm: read-only
 `git ls-files -z --cached --others --exclude-standard -- PATHS`, byte-order sort,
 per-file SHA-256, symlink-target bytes, clean submodule commit identity, deleted
@@ -78,7 +116,11 @@ bytes, each item file and raw artifacts used by passing current receipts.
 Item freshness requires a valid captured `actual` SHA-256 hash and compares live
 bytes with that hash. An existing mismatch with the inventory's expected hash
 remains an unmet implementation criterion; it does not become a freshness veto
-when captured bytes are unchanged. The hook vetoes stale or unreadable state and
+when captured bytes are unchanged. Freshness binds the observed source/fixture
+trees separately from the selected inventory's expected trees. New snapshots
+also bind exact waypoint and ledger bytes, so closing a repair boundary or adding
+an implementation task invalidates a prior snapshot's mutable authority view.
+The hook vetoes stale or unreadable state and
 reports only a predefined freshness error code, or `UNKNOWN` for other errors,
 without exposing raw error messages, paths or environment values.
 Only read-only Git subprocesses are used;
@@ -93,8 +135,19 @@ An active receipt or a missing final raw-hash manifest cannot pass. If input
 bytes change during collection, the importer reports a collection error without
 stopping the original process.
 
-`adoption-map.json` explicitly preserves the19 listed inventory items and stale
-numeric17 count, and replaces obsolete seven-group prose with the approved six
+`adoption-map.json` separately preserves historical inventory03's19 listed items
+and stale numeric17 count. Current implementation criteria and counts derive
+from the exact ledger implementation set. The selected inventory may omit a new
+pending repair row: that row receives an unmet criterion with no invented files.
+Duplicate IDs or inventory rows outside the ledger fail collection. A subset
+inventory, either closed ledger or validation-scope boundary, incomplete inventory, changed deliverable bytes
+or changed production/fixture trees leaves the implementation prerequisite false.
+The snapshot remains collectable and cannot authorize a gate or claim completion.
+This permits an honest CLOSED repair snapshot retaining historical03 while R9
+is pending. A later inventory04 must be supplied explicitly with its digest;
+collection does not adopt it or reopen the boundary.
+
+The mapping replaces obsolete seven-group prose with the approved six
 groups from the current plan/ledger. It enumerates76 exact mandatory image
 scenarios and4 exact native supplements. The original inventory is never edited.
 A supplied operator reference makes this mapping reviewable, but Rust's separate
@@ -122,14 +175,51 @@ evidence, image identity and nonempty observable scenario results. One repaired
 group cannot establish stage or phase completion. Local native supplements are
 required in addition to image scenarios and never credited to a published image.
 
+Evaluate stage `local` after the complete current local program passes. The engine
+can return `COMPLETE` with `stage_complete:true` and `phase_complete:false` while
+publication and published acceptance remain pending. This is the handoff to the
+operator-authorized host P1 commit/tag/publication work. The adapter defines only
+the exact three acceptance-runner actions. It defines no executable publication
+action, and `next_authorized_action` may therefore be null at this handoff. A
+host must not invent an action from the decision. The user's existing publication
+authorization remains separate from the CLI's exact-action authorization.
+
+Committing byte-identical frozen candidate source does not invalidate its local
+receipt merely because HEAD changed; the importer does not compare local evidence
+with live HEAD. Changed production, fixture, deliverable, waypoint or ledger bytes
+still require recollection and explicit revision/adoption. After P1, collect both
+published receipts against their actual immutable publication provenance, retaining
+the original passing local receipt. Pending publication criteria do not create
+another local test requirement.
+
 Published receipts require the immutable repository child reference, matching
 platform, index/source identity, both exported children, and the runner's retained
 publication provenance bound to its hash-checked publication receipt. This adapter
 does not contact the registry or GitHub; it imports the existing runner's recorded
 observations and retained bytes. No new publication proof is fabricated.
 
-The source inventory explicitly says genuine qualified supervisor setup is
-unavailable. Its `external_ready` criterion stays false and blocks release.
+The inventory's `source_commit` is the local candidate's baseline. Local receipts
+must retain that exact value. P1 commits the already accepted candidate later;
+published manifests and receipts bind that actual release commit through the
+existing annotated-tag, successful workflow and immutable publication receipt
+provenance. Published evidence must still reference the exact selected inventory
+bytes and identical frozen source/fixture trees. It does not need to relabel the
+inventory baseline as the later commit. Current published receipts must agree on
+one release commit, index digest and publication-receipt digest; conflicting
+publication identities fail collection. Global contract `identity.source_commit`
+continues to name the candidate inventory baseline; exact published commit/index/
+children remain in the captured manifest, publication and runner provenance.
+
+Genuine supervisor availability is derived from existing current artifact-bound
+evidence. A local or published receipt must pass identity and raw-artifact hashes,
+have a passing recovery group, and contain the exact passing
+`qualified_supervisor_reclaim_controls` scenario with the actual producer's
+qualification, identity and physical-exclusion SHA-256 observations. Without
+that proof its `external_ready` criterion stays false and blocks release. Local
+positive qualification can establish collaborator availability; both published
+whole programs remain mandatory independent release requirements. This adds no
+setup action, authority or substitute acceptance. Raw artifacts used by positive
+qualification are freshness-checked even when another group failed.
 Release, issue readbacks, and reflection remain pending assertions; the first
 adapter does not manufacture these receipts. A later evidence-backed explicit
 revision is required to adopt completion evidence for them. Existing populated
@@ -242,3 +332,55 @@ acceptance runner or model call has been run by this author. Type compatibility,
 runtime behavior, hook execution, output confidentiality on Windows and the real
 UAR import remain unverified until the lead opens the boundary and performs the
 planned serialized integration gate.
+
+### R9 repair continuation
+
+The current source extension owns only `packages/uar/{types,index,cli,importer,
+freshness}.ts`, this document and `examples/uar/{README.md,observed-state.json}`.
+It introduces the explicit inventory reference, retains historical03 reconciliation,
+derives exact current ledger criteria, represents a closed repair boundary, binds
+mutable waypoint/ledger authority, and derives supervisor availability from actual
+artifact-bound positive evidence. The existing adopted contract, receipts and
+compiled distribution remain unchanged by this source author. A new collection
+is a draft; the host must explicitly revise, invalidate superseded evidence and
+adopt before evaluation. Merely collecting later evidence does not change an
+adopted head or authorize a runner.
+
+The source defects addressed are the fixed inventory03 selection and19-item
+assumption after R9 registration, stale open-boundary snapshots after ledger
+changes, and hardcoded unavailable supervisor status despite future genuine
+qualification evidence. Added guards bind explicit digest/path identity, exact
+ledger item membership and mutable authority. Missing new rows remain false
+rather than fabricated. No unrelated production behavior was added.
+
+No compiler, lint, test, schema check, package generation, source review gate,
+runner, model call or acceptance invocation was run during this continuation.
+The lead must finish the entire repair cohort, record its implementation inventory
+and then run the affected serialized integration gate. Type compatibility,
+closed-boundary evaluator result, selected inventory04 collection, supervisor
+evidence behavior and regenerated distribution remain unverified until then.
+
+Source continuation against the R9 ledger requires both `boundary` and
+`validation_scope.boundary` to equal `open`. Either closed or missing authority
+leaves implementation incomplete; snapshots and adoption maps retain both values.
+The existing exact ledger hash binds either future boundary edit. Source inspection
+only was used for this continuation; no verification gate was run.
+
+The release handoff source correction preserves strict local-baseline matching
+while allowing published receipts to bind the actual later release commit only
+through the existing exact inventory/tree and immutable publication provenance.
+The added conflicting-publication guard enforces the existing single release/index
+identity boundary across both architecture receipts. No local rerun, executable
+P1 action, authority, acceptance criterion or verification command was added.
+
+The later source-only pending-observation correction separates actual canonical
+manifests from actual receipt observations. `importer.ts` can capture an absent
+receipt and expose only the fixed existing local gate; `freshness.ts` invalidates
+that view when the receipt appears. Assertions stay false, and genuinely missing
+local evidence records stay absent so the engine can select the existing approved
+collection action. Present failed or malformed receipts retain their actual
+disposition. Published missing receipts remain without a collection action until
+the existing genuine publication provenance requirements can be satisfied.
+Inventory07 retains the earlier source state; inventory08 records this completed
+authoring plus the lead's corresponding existing real-import fixture branch.
+No compiler, package generation, evaluator, runner or test was invoked.

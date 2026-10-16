@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "phase": "first-uar-example",
-  "stage": "complete",
+  "stage": "uar-dogfood-repair-complete",
   "boundary": "open",
   "approved_by": "operator instruction: PLEASE IMPLEMENT THIS PLAN, 2026-10-16",
   "tasks": [
@@ -100,6 +100,12 @@
       "owner": "team",
       "deliverable": "Freshness uses captured bytes; bounded diagnostics; UAR-only rerun carries retained passing calibration",
       "status": "complete"
+    },
+    {
+      "id": "REPAIR-6",
+      "owner": "team",
+      "deliverable": "Explicit current UAR inventory import, closed cohort boundary and historical receipt preservation",
+      "status": "complete"
     }
   ],
   "constraints": {
@@ -110,11 +116,11 @@
     "windows_qualification": false,
     "mcp_implementation": false
   },
-  "known_external_blocker": "UAR genuine qualified supervisor setup is unavailable; no release success without its required evidence.",
-  "implementation_inventory": ".phase-exit/implementation-inventory-06.json",
+  "known_external_blocker": "Dedicated UAR guest/controller setup prepared; genuine physical native qualification pending. UAR release remains incomplete.",
+  "implementation_inventory": ".phase-exit/implementation-inventory-09.json",
   "repair_cohort": "real-uar-freshness-and-calibration-carry",
   "calibration_status": "PASSED_V2_RETAINED_PROOF",
-  "next_authorized_action": "Phase Exit scoped first pass complete. UAR active operation WAIT; release BLOCKED; no UAR action is currently authorized by either decision.",
+  "next_authorized_action": "Commit/push repaired tool, then collect actual UAR contract amendment for explicit adoption and perform approved physical supervisor proof.",
   "source_publication": {
     "repository": "https://github.com/Know-Me-Tools/phase-exit",
     "branch": "main",
@@ -125,5 +131,7 @@
   "adoption_record": ".phase-exit/adoptions/calibration-terminal-receipts-v2.json",
   "phase_exit_acceptance": "passed_scoped_mac_and_real_uar_application",
   "completion_receipt": ".phase-exit/acceptance/completion.json",
-  "phase_complete": true
+  "phase_complete": true,
+  "prior_phase_complete": true,
+  "current_repair_receipt": ".phase-exit/acceptance/repair6-pass.json"
 }

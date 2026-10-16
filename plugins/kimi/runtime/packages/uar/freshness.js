@@ -73,6 +73,19 @@ export async function checkFreshness(snapshotPath) {
     const inventoryPath = resolve(snapshot.root, snapshot.inventory_path);
     if (!contained(snapshot.root, inventoryPath) || sha256(await readFile(inventoryPath)) !== snapshot.inventory_sha256)
         throw new Error('UAR_INVENTORY_CHANGED');
+    // Older immutable snapshots did not contain these fields. New imports bind
+    // the live boundary and task ledger so a later repair cannot reuse an open one.
+    if (snapshot.authority_sources !== undefined) {
+        if (!Array.isArray(snapshot.authority_sources))
+            throw new Error('INVALID_AUTHORITY_SOURCES');
+        for (const value of snapshot.authority_sources) {
+            const source = object(value);
+            if (typeof source.path !== 'string' || typeof source.sha256 !== 'string'
+                || !contained(snapshot.root, source.path) || sha256(await readFile(source.path)) !== source.sha256) {
+                throw new Error('UAR_AUTHORITY_CHANGED');
+            }
+        }
+    }
     for (const kind of ['source', 'fixture']) {
         if (await sourceIdentity(snapshot.root, strings(snapshot[`${kind}_paths`])) !== snapshot[`${kind}_tree`]) {
             throw new Error('UAR_SOURCE_OR_FIXTURE_CHANGED');
@@ -92,6 +105,26 @@ export async function checkFreshness(snapshotPath) {
     }
     if (!Array.isArray(snapshot.receipts))
         throw new Error('INVALID_RECEIPT_INVENTORY');
+    if (snapshot.pending_manifests !== undefined) {
+        if (!Array.isArray(snapshot.pending_manifests))
+            throw new Error('INVALID_PENDING_MANIFESTS');
+        for (const value of snapshot.pending_manifests) {
+            const pending = object(value);
+            if (typeof pending.original_manifest !== 'string' || typeof pending.manifest_sha256 !== 'string'
+                || typeof pending.original_receipt !== 'string' || pending.receipt_observation !== 'absent') {
+                throw new Error('INVALID_PENDING_MANIFEST');
+            }
+            if (sha256(await readFile(pending.original_manifest)) !== pending.manifest_sha256)
+                throw new Error('UAR_ACTION_MANIFEST_CHANGED');
+            const present = await lstat(pending.original_receipt).then(() => true, (error) => {
+                if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT')
+                    return false;
+                throw error;
+            });
+            if (present)
+                throw new Error('UAR_PENDING_RECEIPT_APPEARED');
+        }
+    }
     if (snapshot.active_operation !== null && snapshot.active_operation !== undefined) {
         const active = object(snapshot.active_operation);
         if (typeof active.original_receipt !== 'string' || typeof active.receipt_sha256 !== 'string'
@@ -103,7 +136,8 @@ export async function checkFreshness(snapshotPath) {
         if (receipt.current === true && (typeof receipt.original_manifest !== 'string' || typeof receipt.manifest_sha256 !== 'string'
             || sha256(await readFile(receipt.original_manifest)) !== receipt.manifest_sha256))
             throw new Error('UAR_ACTION_MANIFEST_CHANGED');
-        if (receipt.current !== true || receipt.identity_valid !== true || receipt.raw_valid !== true || receipt.all_groups_complete !== true)
+        if (receipt.current !== true || receipt.identity_valid !== true || receipt.raw_valid !== true
+            || (receipt.all_groups_complete !== true && receipt.supervisor_qualification !== true))
             continue;
         if (!Array.isArray(receipt.raw_artifacts))
             throw new Error('INVALID_RAW_ARTIFACTS');
@@ -121,9 +155,10 @@ const snapshotFile = '__PHASE_EXIT_UAR_SNAPSHOT_PATH__';
 const freshnessErrorCodes = new Set([
     'SOURCE_PATH_ESCAPE', 'DIRTY_SUBMODULE', 'UNSUPPORTED_SOURCE_FILE', 'INVALID_SNAPSHOT', 'INVALID_SNAPSHOT_PATHS',
     'INVALID_SNAPSHOT_ROOT', 'INVALID_SNAPSHOT_INVENTORY', 'UAR_INVENTORY_CHANGED', 'UAR_SOURCE_OR_FIXTURE_CHANGED',
+    'INVALID_AUTHORITY_SOURCES', 'UAR_AUTHORITY_CHANGED',
     'INVALID_ITEM_FILES', 'INVALID_ITEM_FILE', 'UAR_INVENTORY_ITEM_CHANGED', 'INVALID_RECEIPT_INVENTORY',
     'UAR_RUNNING_RECEIPT_CHANGED', 'UAR_ACTION_MANIFEST_CHANGED', 'INVALID_RAW_ARTIFACTS', 'INVALID_RAW_ARTIFACT',
-    'UAR_RAW_EVIDENCE_CHANGED',
+    'UAR_RAW_EVIDENCE_CHANGED', 'INVALID_PENDING_MANIFESTS', 'INVALID_PENDING_MANIFEST', 'UAR_PENDING_RECEIPT_APPEARED',
 ]);
 export async function run(_input) {
     try {

@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "stage": "uar-dogfood-repair-acceptance",
+  "status": "passed",
+  "inventory": ".phase-exit/implementation-inventory-09.json",
+  "inventory_sha256": "8534ca2668945d9eec08a2aec27832fd753e9fc7f1edfd02d21454b6414026eb",
+  "platform": "darwin-arm64",
+  "gates": [
+    {
+      "command": ".phase-exit/private/toolchain/bin/node node_modules/typescript/bin/tsc -p tsconfig.json",
+      "terminal_exit": 0
+    },
+    {
+      "command": ".phase-exit/private/toolchain/bin/node dist/scripts/package.js",
+      "terminal_exit": 0,
+      "packages": [
+        "claude",
+        "codex",
+        "opencode",
+        "kimi",
+        "deepseek"
+      ]
+    },
+    {
+      "command": "PHASE_EXIT_ACCEPTANCE_CASES=real-uar-import [retained calibration, exact Rust binary and UAR inventory05] .phase-exit/private/toolchain/bin/node dist/tests/acceptance.js",
+      "terminal_exit": 0,
+      "cases": [
+        {
+          "id": "real-uar-import",
+          "passed": true,
+          "detail": "Observed expected production-path outcome"
+        }
+      ],
+      "original_receipt_sha256": "ed950993b122e7d4e5ec49e532338bfc88897afc13a97013467bc14d9c95191c"
+    }
+  ],
+  "model": "jev-1.14.0",
+  "model_channel": "preview",
+  "thresholds": {
+    "support": 0.95,
+    "contradiction": 0.05
+  },
+  "calibration": "Original validated v2 passing proof retained without semantic reevaluation",
+  "local_decision": {
+    "verdict": "CONTINUE",
+    "evaluated_stage": "local",
+    "stage_complete": false,
+    "phase_complete": false,
+    "unmet_count": 81,
+    "next_authorized_action": {
+      "id": "uar-local-acceptance",
+      "kind": "gate"
+    }
+  },
+  "release_decision": {
+    "verdict": "BLOCKED",
+    "evaluated_stage": "release",
+    "stage_complete": false,
+    "phase_complete": false,
+    "unmet_count": 238
+  },
+  "limitations": [
+    "This affected gate does not rerun the earlier full Phase Exit suite or live semantic calibration.",
+    "No UAR product gate or supervisor physical proof is credited.",
+    "The test adoption lives in an isolated acceptance state; actual UAR contract adoption remains a separate explicit operator action.",
+    "Native harnesses were regenerated; no new host-platform execution is claimed."
+  ]
+}

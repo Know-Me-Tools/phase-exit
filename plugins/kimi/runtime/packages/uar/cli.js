@@ -4,6 +4,8 @@ function parse(argv) {
     let output;
     let adoptionReference;
     let activeOperationObservation;
+    let inventoryPath;
+    let inventorySha256;
     const receipts = [];
     for (let i = 0; i < argv.length; i++) {
         const flag = argv[i];
@@ -31,17 +33,26 @@ function parse(argv) {
             activeOperationObservation = value;
             i++;
         }
+        else if (flag === '--inventory' && inventoryPath === undefined && value && !value.startsWith('--')) {
+            inventoryPath = value;
+            i++;
+        }
+        else if (flag === '--inventory-sha256' && inventorySha256 === undefined && value && /^[a-f0-9]{64}$/.test(value)) {
+            inventorySha256 = value;
+            i++;
+        }
         else
             return null;
     }
-    if (!root || !output)
+    if (!root || !output || (inventoryPath === undefined) !== (inventorySha256 === undefined))
         return null;
     return { root, output, ...(receipts.length ? { receipts } : {}), ...(adoptionReference ? { adoptionReference } : {}),
-        ...(activeOperationObservation ? { activeOperationObservation } : {}) };
+        ...(activeOperationObservation ? { activeOperationObservation } : {}),
+        ...(inventoryPath !== undefined && inventorySha256 !== undefined ? { inventory: { path: inventoryPath, sha256: inventorySha256 } } : {}) };
 }
 const options = parse(process.argv.slice(2));
 if (options === null) {
-    process.stderr.write('Usage: node cli.js --root UAR_ROOT --output NEW_PRIVATE_DIRECTORY [--receipt MANIFEST RECEIPT]... [--adoption-reference OPERATOR_REFERENCE] [--active-operation-observation HOST_OBSERVATION]\n');
+    process.stderr.write('Usage: node cli.js --root UAR_ROOT --output NEW_PRIVATE_DIRECTORY [--inventory PATH --inventory-sha256 HEX] [--receipt MANIFEST RECEIPT]... [--adoption-reference OPERATOR_REFERENCE] [--active-operation-observation HOST_OBSERVATION]\n');
     process.exitCode = 14;
 }
 else {

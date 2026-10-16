@@ -1,0 +1,659 @@
+{
+  "schema_version": 1,
+  "phase": "first-uar-example",
+  "revision": 8,
+  "recorded_at": "2026-10-16T21:02:25.415Z",
+  "document_kind": "production_source_implementation_inventory_not_verification_receipt",
+  "repair_cohort": "uar-r9-explicit-inventory-boundary-publication-and-pending-observations",
+  "implementation_complete": true,
+  "implementation_complete_scope": "Phase Exit REPAIR-6 authored production source, acceptance fixture and required documentation only; not whole UAR R9 implementation or supervisor setup.",
+  "unresolved_implementation": [],
+  "boundary": "closed",
+  "verification_authorized": false,
+  "boundary_reason": "Lead must finish and record the entire UAR R9 production, fixture, documentation and genuine isolated supervisor setup inventory05 before any affected Phase Exit build/package/acceptance command. UAR inventory04 is retained as the earlier source inventory.",
+  "previous_inventory": {
+    "path": ".phase-exit/implementation-inventory-07.json",
+    "sha256": "3a6bf0f5266ae23f55ef3b56901e86dfba8a6a3dd4a2088ea6a571506ffbd3e1",
+    "preserved": true,
+    "disposition": "Source-only inventory before the observed pending-receipt authoring fix; retained unchanged."
+  },
+  "phase_record_at_capture": {
+    "path": ".phase-exit/project-phase.json",
+    "sha256": "ebf634396757d95e7776d59f980824feff2e27b536cb1f938c408a18bae99301",
+    "stage": "uar-dogfood-repair",
+    "boundary": "closed",
+    "task_id": "REPAIR-6",
+    "task_status": "in_progress",
+    "note": "Lead owns the mutable phase record; its reference may be updated after capture."
+  },
+  "completed_changes": [
+    {
+      "id": "PE6-1",
+      "outcome": "Explicit inventory path and exact byte SHA-256 API/CLI; historical03 remains default reconciliation, never automatic latest authority.",
+      "files": [
+        "packages/uar/types.ts",
+        "packages/uar/index.ts",
+        "packages/uar/cli.ts",
+        "packages/uar/importer.ts"
+      ]
+    },
+    {
+      "id": "PE6-2",
+      "outcome": "Exact ledger implementation set including pending R9; missing rows false, extra/duplicate identities rejected; both ledger and validation-scope boundaries must be open.",
+      "files": [
+        "packages/uar/importer.ts"
+      ]
+    },
+    {
+      "id": "PE6-3",
+      "outcome": "Freshness binds observed source/fixture bytes, selected inventory and actual item bytes, waypoint/ledger bytes and raw qualification evidence without turning historical expectations into current acceptance.",
+      "files": [
+        "packages/uar/importer.ts",
+        "packages/uar/freshness.ts"
+      ]
+    },
+    {
+      "id": "PE6-4",
+      "outcome": "Supervisor readiness derives from actual current identity-valid raw-valid local or published positive recovery evidence; both published whole programs remain mandatory.",
+      "files": [
+        "packages/uar/importer.ts",
+        "packages/uar/freshness.ts"
+      ]
+    },
+    {
+      "id": "PE6-5",
+      "outcome": "Strict local inventory-baseline commit; published actual release commit requires identical frozen inventory/source/fixture identities and existing immutable tag/workflow/publication proof; reject conflicting release/index/publication receipt identities.",
+      "files": [
+        "packages/uar/importer.ts"
+      ]
+    },
+    {
+      "id": "PE6-6",
+      "outcome": "Existing real-UAR fixture derives counts, passes explicit selected inventory, rejects digest mismatch, observes either closed boundary and compares supervisor decision using current identity-valid raw-valid producer observations. Actual absent canonical receipt enters the existing pending branch with manifest_current and real lstat absence, no fabricated receipt/local-native evidence, local CONTINUE for the exact existing gate and phase incomplete.",
+      "files": [
+        "tests/acceptance.ts"
+      ]
+    },
+    {
+      "id": "PE6-7",
+      "outcome": "README, adapter contract and examples document authored revision, immutable adoption/history, closed R9 state and local-stage COMPLETE/manual P1 handoff with phase incomplete and no invented executable.",
+      "files": [
+        "README.md",
+        "docs/uar-adapter.md",
+        "examples/uar/README.md",
+        "examples/uar/observed-state.json"
+      ]
+    },
+    {
+      "id": "PE6-8",
+      "outcome": "Renewed source inventory and append-only handoff record exact source state and deferred affected gates without claiming their results.",
+      "files": [
+        ".phase-exit/implementation-inventory-08.json",
+        ".phase-exit/handoff.md"
+      ]
+    },
+    {
+      "id": "PE6-9",
+      "outcome": "Absent canonical current local receipt is a pending manifest observation. Local assertions stay false with no invented evidence records, allowing only the existing adopted collection action. Present malformed/failed receipts keep their disposition, and receipt appearance invalidates the absent snapshot. Published action provenance remains strict.",
+      "files": [
+        "packages/uar/importer.ts",
+        "packages/uar/freshness.ts",
+        "docs/uar-adapter.md",
+        "tests/acceptance.ts"
+      ]
+    }
+  ],
+  "source_assessment_basis": "Source inspection and exclusive writer handoffs. Lead confirmed the pending fixture uses manifest_current and actual lstat absence; no verification or evaluator invocation executed.",
+  "retained_calibration": {
+    "path": ".phase-exit/private/calibration-v2-pass-proof.json",
+    "sha256": "7ad805b7e0fc5d3af9cbe671e8db1457df6e5bc9905de544661433edd2d4a478",
+    "disposition": "Retain original passing v2 proof and original three live judgments; no new semantic sampling. This inventory does not validate or reevaluate them."
+  },
+  "pending_generated_artifacts": {
+    "status": "deferred_existing_artifact_generation_gates",
+    "paths": [
+      "dist/",
+      "plugins/claude/runtime/",
+      "plugins/codex/runtime/",
+      "plugins/opencode/runtime/",
+      "plugins/kimi/runtime/",
+      "plugins/deepseek/runtime/",
+      "artifacts/"
+    ],
+    "note": "Existing generated bytes are historical; authored source completeness does not claim fresh compiled or packaged outputs."
+  },
+  "pending_uar_prerequisite": {
+    "path": "/Users/gqadonis/Projects/prometheus/universal-agent-runtime/.kbd-orchestrator/phases/uar-outstanding-issues-v1-1-1/implementation-inventory-20261016-05.json",
+    "sha256": null,
+    "status": "await_complete_whole_uar_r9_inventory_and_setup",
+    "historical_inventory": "implementation-inventory-20261016-04.json",
+    "note": "Explicit next reference is05;04 remains preserved before the aggregate authoring hold. No existence, completeness, digest, qualification or acceptance is asserted. Canonical local.json will use05 and a fresh evidence_root without a receipt; local02 is retained."
+  },
+  "pending_verification": [
+    {
+      "order": 1,
+      "cwd": "/Users/gqadonis/Projects/prometheus/phase-exit",
+      "executable": "npm",
+      "argv": [
+        "run",
+        "build:no-tests"
+      ],
+      "status": "not_run",
+      "output": "dist/",
+      "source": "package.json scripts.build:no-tests"
+    },
+    {
+      "order": 2,
+      "cwd": "/Users/gqadonis/Projects/prometheus/phase-exit",
+      "executable": "npm",
+      "argv": [
+        "run",
+        "package:no-tests"
+      ],
+      "status": "not_run",
+      "output": "five tracked plugin runtimes and artifacts/plugin trees",
+      "source": "package.json scripts.package:no-tests and scripts/package.ts"
+    },
+    {
+      "order": 3,
+      "cwd": "/Users/gqadonis/Projects/prometheus/phase-exit",
+      "executable": "node",
+      "argv": [
+        "dist/tests/acceptance.js"
+      ],
+      "env": {
+        "PHASE_EXIT_ACCEPTANCE_CASES": "real-uar-import",
+        "PHASE_EXIT_CALIBRATION_PROOF": "/Users/gqadonis/Projects/prometheus/phase-exit/.phase-exit/private/calibration-v2-pass-proof.json",
+        "PHASE_EXIT_UAR_ROOT": "/Users/gqadonis/Projects/prometheus/universal-agent-runtime",
+        "PHASE_EXIT_UAR_INVENTORY": "/Users/gqadonis/Projects/prometheus/universal-agent-runtime/.kbd-orchestrator/phases/uar-outstanding-issues-v1-1-1/implementation-inventory-20261016-05.json",
+        "PHASE_EXIT_ACCEPTANCE_OUTPUT": "/Users/gqadonis/Projects/prometheus/phase-exit/.phase-exit/private/acceptance-inventory08-uar05"
+      },
+      "status": "not_run",
+      "output": ".phase-exit/private/acceptance-inventory08-uar05/receipt.json, uar-pending-local-decision.json and uar-decision.json",
+      "source": "tests/acceptance.ts selector, retainedCalibration and real-uar-import",
+      "prerequisites": [
+        "Whole UAR R9 implementation/setup inventory recorded",
+        "Use pinned Node24.22.0 and TypeScript7.0.2",
+        "First two commands passed serially",
+        "Retained original Rust binary and calibration proof unchanged",
+        "Fresh private output directory",
+        "Explicit UAR inventory05 present and exact bytes supplied by the existing fixture"
+      ]
+    }
+  ],
+  "checks_executed": [],
+  "no_new_verification_scope": [
+    "No Rust rebuild or tests",
+    "No calibration resampling or model call",
+    "No unrelated acceptance cases or broad suite",
+    "No new independent source review",
+    "No UAR runner launched by this inventory"
+  ],
+  "guards": [
+    {
+      "observed_failure": "Importer hardcoded historical03 and19 rows after R9 enlarged ledger.",
+      "response": "Explicit digest/path selection and ledger-derived criteria; pending rows do not pass."
+    },
+    {
+      "observed_failure": "Repair boundary can change after immutable snapshot collection.",
+      "response": "Require both live boundary authorities open and bind captured waypoint/ledger bytes in freshness."
+    },
+    {
+      "observed_failure": "Supervisor unavailable assertion ignored future genuine qualified evidence.",
+      "response": "Require actual current identity-valid raw-valid artifact-bound qualification observations."
+    },
+    {
+      "observed_failure": "Approved P1 creates the actual published commit after local acceptance.",
+      "response": "Preserve strict local baseline; use exact immutable publication provenance for published commit; refuse mixed publication identities."
+    },
+    {
+      "observed_failure": "Importer required a receipt before the first approved canonical local collection run and emitted false observed records, blocking the planned missing-evidence gate.",
+      "response": "Capture absence separately, require exact canonical current manifest identity, omit genuinely unobserved local evidence, keep fixed gate argv, reject malformed present receipts and invalidate absence if a receipt appears."
+    }
+  ],
+  "unverified_claims": [
+    "TypeScript compilation and generated package freshness",
+    "Actual new UAR inventory05 import/evaluation and closed-boundary outcomes",
+    "Freshness execution after authority or source mutation",
+    "Genuine supervisor proof import on the guest qualification path",
+    "Local receipt preservation and published release-commit handoff behavior",
+    "Missing local observation imports and adopted exact-gate CONTINUE without fabricated runtime evidence",
+    "Pending receipt appearance freshness veto and malformed-present distinction"
+  ],
+  "uncomfortable_limit": "Source-complete Phase Exit authoring is not fresh acceptance and does not complete UAR, qualify its guest or authorize any gate before the entire UAR boundary.",
+  "file_scope": "Authored source/docs/fixtures/configuration scope from preserved inventory07, refreshed for the complete pending-observation correction. Generated runtime/package outputs remain deferred.",
+  "files": [
+    {
+      "path": ".agents/plugins/marketplace.json",
+      "sha256": "29e55cfc216790b1442e7dd9baa3c91bba4944e74ead766e7fe609e999bf47e7"
+    },
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "sha256": "0e9afaed2babebe810e70b2e8d9fa7b86856ed01514c3a4cd369fb5fd47994a3"
+    },
+    {
+      "path": ".env.example",
+      "sha256": "8f29df0ed57ba51c9024c013415406b18611a46ae43b6efdb60d985a14a13f3a"
+    },
+    {
+      "path": ".gitattributes",
+      "sha256": "0dd0576a3348780893da4f24210e3499241b411e8ab332be31540b6e22393116"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "7653f260a837c38d5adf2808ab0a270a26e6e930bce040e68776df3e1e726d62"
+    },
+    {
+      "path": ".phase-exit/handoff.md",
+      "sha256": "b71a9f2cc08387f08b5cc6fba3895202e1ef31528b7834414d8a0c48f378e662"
+    },
+    {
+      "path": ".prometheus/decisions.md",
+      "sha256": "02fe9e19d21c2fd4b9d1dbe21e58a8bb84026e9eb01a782cd7b2ebcaac6080de"
+    },
+    {
+      "path": ".prometheus/gotchas.md",
+      "sha256": "5bc5abb7e198baa65ec8e91688b8dcfb0564d5b1212af1ce1abe9e6c84bc7f5a"
+    },
+    {
+      "path": ".prometheus/session-log.md",
+      "sha256": "99cf675e70e279d5d18dd0d50be1f91d77191bcb80d7066b03cf196b891e1a77"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "1fc180ccddafc879b0d09a194e09390979fcbd0078d96ea303c6dcde030a6049"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "bd7ddcea5cb40dd9a2c11776c371c006e68fc06938cd63a00bf71e50062f6287"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "4b5b5a99528152987b44fa9fd460ec1582b440371dd7657576b28ccf2d1e327a"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "1aa4b700529aa424ea73958b9fd310cadf34a8d5176c0798b70d81433298c484"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "README.md",
+      "sha256": "fa6c91f0c61086e6db70e6d8168c2220657c58aa0dd6db8f804daee8c168519d"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "38009115657aa7fe7794c63c6ce61cd5cfc1fa517826045c08c737dfee0838ce"
+    },
+    {
+      "path": "crates/phase-exit-cli/Cargo.toml",
+      "sha256": "8f4fef4c66cbb09d63ea808321ff8bd5f59517ea63505e5e82be8b13b4237da4"
+    },
+    {
+      "path": "crates/phase-exit-cli/src/main.rs",
+      "sha256": "27250ae80acc223e01c8df6d6bba485a64905502799e4be6b3e3777a7a740f8d"
+    },
+    {
+      "path": "crates/phase-exit-core/Cargo.toml",
+      "sha256": "8150cefec2290fafe30f6bc27a96a9baddf7233ffd225d99fa75f7d999083056"
+    },
+    {
+      "path": "crates/phase-exit-core/src/engine.rs",
+      "sha256": "373c45bc71915d807cf5d4643c30558c77909e4020fcd20c0424b3dca750c6da"
+    },
+    {
+      "path": "crates/phase-exit-core/src/hooks.rs",
+      "sha256": "b6925ecd8e795cc625f10fe21c9944193488025756d25e5daaebea67a80b90ed"
+    },
+    {
+      "path": "crates/phase-exit-core/src/jev.rs",
+      "sha256": "1c47d5c22f26d95923abcea0ad8be13754662756e60de4a6ca5c0a836ce633f5"
+    },
+    {
+      "path": "crates/phase-exit-core/src/lib.rs",
+      "sha256": "33967744141f91593e4e613ea145a7c14e745ac157721130ac5e9245c9be00cb"
+    },
+    {
+      "path": "crates/phase-exit-core/src/lifecycle.rs",
+      "sha256": "71f84e6ebcacf23f7d2004ac8180ca0b52490fac293b8c7afb57918a423d1d0c"
+    },
+    {
+      "path": "crates/phase-exit-core/src/schema.rs",
+      "sha256": "1c99486a4398a9bf65571818b3b6559fd0879da7414c133cb97bc777b50fad30"
+    },
+    {
+      "path": "crates/phase-exit-core/src/store.rs",
+      "sha256": "e53610c41e2d525351a5b4dd2aa1b624b36669697c2eca5bd3d1841362822650"
+    },
+    {
+      "path": "crates/phase-exit-core/src/types.rs",
+      "sha256": "2fbb51bb2a8262006e55d9e0f7bdfd26182bab53af951dfe7d5708e50e7ca14f"
+    },
+    {
+      "path": "docs/PROTOCOL.md",
+      "sha256": "da0ad11286eb0d75cbe12924d936e2d766ab5661b1a8047cc5b81d2922e196c8"
+    },
+    {
+      "path": "docs/acceptance-plan.md",
+      "sha256": "b917f72b8c267ef986c087c806e181e522c38f9cd6fd22d8d5462e81fd1d663b"
+    },
+    {
+      "path": "docs/acceptance-results.md",
+      "sha256": "d073bb8802a9619b0a23a4d6e8c2078d0866e446d241d802850789f946c2e39c"
+    },
+    {
+      "path": "docs/amendments/calibration-terminal-receipts-v2.json",
+      "sha256": "47290ecd97da4a417368a2196a1b679ca97872ba9177d305c66f6ce078e20100"
+    },
+    {
+      "path": "docs/amendments/calibration-terminal-receipts-v2.md",
+      "sha256": "498a0fd0615fba3db4f00657550593c4539c3a61823914e627299bf7ae3e5761"
+    },
+    {
+      "path": "docs/amendments/calibration-terminal-receipts-v2.review-2.json",
+      "sha256": "b350e3565066094a9ee191f6d2b464c4fb4e0af0750944c7d769aa28f6cd41ae"
+    },
+    {
+      "path": "docs/amendments/calibration-terminal-receipts-v2.review.json",
+      "sha256": "540335b4da786eb00af8637324c703a52e231a028ea9c493d406411ad0125cf8"
+    },
+    {
+      "path": "docs/capabilities.md",
+      "sha256": "71c1d2aec3ec0c98dc36c28f0c75409f0a9fb4583e1453991b5c0981ad0c88c1"
+    },
+    {
+      "path": "docs/implementation-plan.md",
+      "sha256": "de21857b56475778eeb115257567e98d1d31c15adc41751728dafe40ac1b7458"
+    },
+    {
+      "path": "docs/issues/mcp-app.md",
+      "sha256": "36ba60201cc1ead31930a666e678b8f05f953c54bfa45735df6d5b69b76d3c9a"
+    },
+    {
+      "path": "docs/issues/mcp-server.md",
+      "sha256": "be9537a9a0323d515b4ae11ce8f9459aa390a66260390d13125553eaa3c030f9"
+    },
+    {
+      "path": "docs/research.md",
+      "sha256": "c2885d281bcd3798719476d2574938eefbb8836e94e166980aea6f015ae25e35"
+    },
+    {
+      "path": "docs/rust-interface.md",
+      "sha256": "95b38ab26da4ce6a3c35e4b462327fb37dfdbac80ac279a483d49187239230ce"
+    },
+    {
+      "path": "docs/specification.md",
+      "sha256": "a5d689445b379802cc528cee1910e48515ce9027f8abebb4607446c32ecc6a9e"
+    },
+    {
+      "path": "docs/typescript-interface.md",
+      "sha256": "a58dad375de7e91e5aea5bad5d4e1e97efbc76a9f6bae58546776fcfdc5b07ad"
+    },
+    {
+      "path": "docs/uar-adapter.md",
+      "sha256": "bf996e68569fa3671915c60086b56c27a6f7b0efb04834e0575b4bdd960d9821"
+    },
+    {
+      "path": "examples/uar/README.md",
+      "sha256": "f358ac96fef019b7ae428bfafb4f7f3ab5a4cb169cd95911dc6a3a754f20bf88"
+    },
+    {
+      "path": "examples/uar/case-study.md",
+      "sha256": "2f3ebb1065b20a3adf6885ceea83978458c1e9b6fc37efc38c96845c585e9b93"
+    },
+    {
+      "path": "examples/uar/observed-state.json",
+      "sha256": "7263560880d9c957733deecd606264caf611a8f50b2088c8694f495985f5aabd"
+    },
+    {
+      "path": "fixtures/hooks/credential.ts",
+      "sha256": "a12e719e2d4395ec6baaeb040c6a942b540247bb296d7ebd3d610d31c4b5f9a7"
+    },
+    {
+      "path": "fixtures/hooks/fail.ts",
+      "sha256": "9f60edbcb12f155499f24238f4f43875eda54d37cc3ded0967d84397e5e86045"
+    },
+    {
+      "path": "fixtures/hooks/pass.ts",
+      "sha256": "80eeb08eeaf84bfb16318b862d507ce51dd4369842f3339d4fa6cfd60e7975d9"
+    },
+    {
+      "path": "fixtures/hooks/veto.ts",
+      "sha256": "acc3116eb0de09304d3f6149d7a02507a859c5fb1d3485d1780588d80326d681"
+    },
+    {
+      "path": "fixtures/semantic-examples-v2.json",
+      "sha256": "56fc52a7108cfeead7746d896f1a363257b94bb98f923e29091b4feda4bfbf17"
+    },
+    {
+      "path": "fixtures/semantic-examples.json",
+      "sha256": "c7d381a7982e1d6f833861a89252efd137f7d9a92cc99518d70c700ddd285f54"
+    },
+    {
+      "path": "kimi-marketplace.json",
+      "sha256": "d894c930b3c5491795931b029887a848c3001914db7eb11969eaf6146068ca8a"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "0bcca87f35ad27bf59f1abcfbf21c8d907d70ef49992220ede0de55a4e8a12e7"
+    },
+    {
+      "path": "package.json",
+      "sha256": "df997dd00808fa64b6af89c7bb9bdf919a9868602850c8aa504782d335edf424"
+    },
+    {
+      "path": "packages/distribution/files.ts",
+      "sha256": "21bdf5de1436c707052eb9b1cf491e3f639cfd4dd05c14daf1862f6137b7e35f"
+    },
+    {
+      "path": "packages/harnesses/bridge.ts",
+      "sha256": "9b603c8eff7c586d3641dd6f8fef87f5c5718148d72d4fb36da20f7a4cdedb61"
+    },
+    {
+      "path": "packages/harnesses/cli.ts",
+      "sha256": "622e69797e89d8eb403d6f96af1a85d62d583984cb5e8454cb99ff32d3410133"
+    },
+    {
+      "path": "packages/harnesses/codex-stop.ts",
+      "sha256": "7d620f02a535e888b9f5296b7de267fd3cb9e26a1c37808c4cd5622bf9eacc47"
+    },
+    {
+      "path": "packages/harnesses/codex-tool.ts",
+      "sha256": "9d83b0d38e536896797fe7638667d2b00d937e67182d05fb0ce4ea5c104c281d"
+    },
+    {
+      "path": "packages/harnesses/deepseek.ts",
+      "sha256": "3b9f05ee25ba27e020f6e46b6dd2275121b8568632991e22737b711092cbab87"
+    },
+    {
+      "path": "packages/harnesses/opencode.ts",
+      "sha256": "1e8d777298c18793ad3b271d2a602cff7ebb5e058ba88645684300baa3bd6714"
+    },
+    {
+      "path": "packages/hooks/json.ts",
+      "sha256": "96f4609fe50af4800427036c969ab1770ce8eb00d98a76625d97ae9288a1f7c6"
+    },
+    {
+      "path": "packages/hooks/pipeline.ts",
+      "sha256": "929eb2131099fe4cdb2da7c4d0d48f3b9a10b7469c58e3155164b8e91b3f5938"
+    },
+    {
+      "path": "packages/hooks/runner.ts",
+      "sha256": "648552e6b0c83da3a02b4e39ee11d13ebb955e63194a7adbf7748ebb9155492f"
+    },
+    {
+      "path": "packages/hooks/types.ts",
+      "sha256": "4640e1476b95188152ccbe4a158d9cfbcb9b6da51e9b301b80963427d33e46a5"
+    },
+    {
+      "path": "packages/hooks/validation.ts",
+      "sha256": "4904889d52f76945cdfa7509b781255bbefa461f23a60e67d22f63dd0856eaa1"
+    },
+    {
+      "path": "packages/hooks/worker.ts",
+      "sha256": "8e7f146c3b4c0be9380b232d507598f17ab4a3afc83d1d1db981101916e01427"
+    },
+    {
+      "path": "packages/uar/cli.ts",
+      "sha256": "405e8d8c515bdab5e8cd79358af83daac76cf16dedab5389194aee68bc57303b"
+    },
+    {
+      "path": "packages/uar/freshness.ts",
+      "sha256": "6e8ab4e91aa8a3d97911989a778e42a2ebccb11412bdad5dfc0763f00343a950"
+    },
+    {
+      "path": "packages/uar/importer.ts",
+      "sha256": "a45e939d96a799db9064f72758a7b1a228770ce7676a6a885e1ee216ff9b6b7a"
+    },
+    {
+      "path": "packages/uar/index.ts",
+      "sha256": "f44767d275289d5683f834d0a4fe049eb0bd12eb1cc49aa1fba33e15a50805e0"
+    },
+    {
+      "path": "packages/uar/scenarios.ts",
+      "sha256": "63a08d3885bb09cf8d16b816c3a1dd63a3a3ea9a5c6bc18854af75c1d4a8772d"
+    },
+    {
+      "path": "packages/uar/types.ts",
+      "sha256": "1842c0953b3be5041406ca2a456880c3b1ff598dfbe1f49f4eba409bcbb3a120"
+    },
+    {
+      "path": "plugins/claude/.claude-plugin/plugin.json",
+      "sha256": "c986231838f9d754adb96d03ec35a441753945a89b8f7942a2119fcebf5e27ee"
+    },
+    {
+      "path": "plugins/claude/README.md",
+      "sha256": "35c2d149f21467ee6218255c45971ea313522306cb9903655f044ec3108bf06a"
+    },
+    {
+      "path": "plugins/claude/hooks/hooks.json",
+      "sha256": "5c43bc78f24b414b05c0f407c217e94c66b8a419c5590cee27bd7cae4cc2e63d"
+    },
+    {
+      "path": "plugins/codex/.codex-plugin/plugin.json",
+      "sha256": "dd35b148fbad696610dde9da0dd485ea45cbfbc8d77326bbad857ad17a86fd66"
+    },
+    {
+      "path": "plugins/codex/README.md",
+      "sha256": "473304f49c7d90deb5c6042e2df612b0d3c104d56be090b280c82e4ec0d799ad"
+    },
+    {
+      "path": "plugins/codex/hooks/hooks.json",
+      "sha256": "2689960d59827a75407928e781656ef121da6451343c55e83177a9c1515db3b9"
+    },
+    {
+      "path": "plugins/deepseek/README.md",
+      "sha256": "ac03977197f0100ddf941808b81b16b6e94aede03a2f93e9a42f01b195546e91"
+    },
+    {
+      "path": "plugins/deepseek/cordis.patch.yml",
+      "sha256": "7dff30a7d48ffb466acce5de901383c4a0a9d9412361bab8d360211f07c5ebb3"
+    },
+    {
+      "path": "plugins/deepseek/package.json",
+      "sha256": "fc880b6dbbb42fface9360b251604f063272cbdc90c708ad14754d265cf17be5"
+    },
+    {
+      "path": "plugins/kimi/README.md",
+      "sha256": "f5aac5d9dc1917e9de60de93d88317d8e5d599a46cbf3775bb7e169b1f718cd2"
+    },
+    {
+      "path": "plugins/kimi/kimi.plugin.json",
+      "sha256": "bc60cdaaee52eefa8ab03cc668e81b8c1614116988496ab292d0a3a7a5312d6c"
+    },
+    {
+      "path": "plugins/opencode/README.md",
+      "sha256": "873aedca9de9d6fd45548f1b519e8562a61afa3b36ac0d86fad07e90a0086214"
+    },
+    {
+      "path": "plugins/opencode/package.json",
+      "sha256": "949255c4c061d7ce1b9c94103bd78d2a9b6deca8236ddce129fbcf5c2f97ae61"
+    },
+    {
+      "path": "schemas/action.schema.json",
+      "sha256": "777a73570f214da230efdb9acfb59c0fb7f54f72f31bfa4c9411b77642e274d5"
+    },
+    {
+      "path": "schemas/adoption.schema.json",
+      "sha256": "45669fb32623efea10aa9130f33841ec9d4608e187998abf43f2ba16a5cfff01"
+    },
+    {
+      "path": "schemas/contract.schema.json",
+      "sha256": "020db3684e909bfb8c365bfb46b1b906a01185754315e6bde2c81327e8e76b54"
+    },
+    {
+      "path": "schemas/decision.schema.json",
+      "sha256": "5f30e845cbed2d871c5c33a722540f8c4e3d1ff1b49dd67caa6e75e31c299551"
+    },
+    {
+      "path": "schemas/evidence.schema.json",
+      "sha256": "9a5a3945f292196f7f7861e40915d11c2d55128ca8be58fc48acf35de5248cd5"
+    },
+    {
+      "path": "schemas/hooks-config.schema.json",
+      "sha256": "a644d041dda192054edec5d1a51d3a293f2a18931e4fe96e1f075b752046a0f9"
+    },
+    {
+      "path": "schemas/hooks-context.schema.json",
+      "sha256": "a6de2278928d90d86e12915f0f8e7dbe74b5c5b7d1d042e83ede62df8e1a6fa6"
+    },
+    {
+      "path": "schemas/hooks-input.schema.json",
+      "sha256": "eafc472d90ec4d82891e3db2b05fdd18f4d265050dc348e71b5596eb3937f684"
+    },
+    {
+      "path": "schemas/hooks-output.schema.json",
+      "sha256": "db116ad86ccdcc3af8265698e0c6c82dfc4351bb3828232d7d1fa810b05602a5"
+    },
+    {
+      "path": "schemas/learning.schema.json",
+      "sha256": "6eb315fcbf23f221478349e7fa735e27144e5e047ca50f635431d981e33344fb"
+    },
+    {
+      "path": "scripts/install-skills.ts",
+      "sha256": "95b80dcd4d962d2e442899b1884388afe9800eaca7368b057ce19011f58e7deb"
+    },
+    {
+      "path": "scripts/install.ts",
+      "sha256": "90ccf7199471b17bf2ada9e8a6e552666a8dd58220eecfa190558cbf88b911b5"
+    },
+    {
+      "path": "scripts/package.ts",
+      "sha256": "161294c02fe3e3413445083886abcceec913b43e6e6d4b77ea1fab8f3a8161d6"
+    },
+    {
+      "path": "scripts/with-jev-key.ts",
+      "sha256": "34a644cac28568a3dbde9ac764d639bd67ded8de22818bdf3d4f6d1f36e4842e"
+    },
+    {
+      "path": "skills/phase-contract/SKILL.md",
+      "sha256": "5647b4412461310ae2a1f7581429e3fdb48ac9e8be59f7a51ad8f8517ed9d36f"
+    },
+    {
+      "path": "skills/phase-contract/references/workflow.md",
+      "sha256": "66e5cc921fb6c59d0127c4a8655bac5655d0e3214b04f7758ce589702a39b1f8"
+    },
+    {
+      "path": "skills/phase-exit/SKILL.md",
+      "sha256": "ca8484caf297f54bc4349e8165d3acb97a82e1b3d759f896d22adba819aa3e34"
+    },
+    {
+      "path": "skills/phase-exit/references/decisions.md",
+      "sha256": "0c0031e4f1da410bc3c0ad7b6d370f05dccff189a83c7bfa7eda9b08f6de0101"
+    },
+    {
+      "path": "tests/acceptance.ts",
+      "sha256": "01b9cc1f03785611d91f1a9c0bce6d04f2c2e3b7a9a136e5107a43b097ff8a17"
+    },
+    {
+      "path": "tests/fixture-command.ts",
+      "sha256": "7f8b6c458405c7b6512b81b4ea943fb224590cbbcdca1d0e61aaaf8a0422e53f"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "34bceca1114b43be6786f34fef14b19da860627dd98d0db8928d77e9cb9a74aa"
+    }
+  ]
+}

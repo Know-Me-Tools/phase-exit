@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "stage": "affected-typescript-build",
+  "inventory": ".phase-exit/implementation-inventory-08.json",
+  "command": {
+    "executable": "/Users/gqadonis/Projects/prometheus/phase-exit/.phase-exit/private/toolchain/bin/node",
+    "argv": [
+      "node_modules/typescript/bin/tsc",
+      "-p",
+      "tsconfig.json"
+    ],
+    "cwd": "/Users/gqadonis/Projects/prometheus/phase-exit"
+  },
+  "terminal_exit": 2,
+  "status": "failed",
+  "diagnostics": [
+    {
+      "file": "packages/uar/importer.ts",
+      "line": 456,
+      "column": 3,
+      "code": "TS2322",
+      "message": "Type with artifact_proof array is not assignable to Json: image, platform and stage include undefined."
+    }
+  ],
+  "all_observed_diagnostics": 1,
+  "next": "Complete entire compiler diagnostic cohort before rerun; no package/test gate ran."
+}

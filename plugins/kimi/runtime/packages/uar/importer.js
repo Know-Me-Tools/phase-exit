@@ -1,6 +1,6 @@
-import { readFile, mkdir, writeFile, realpath, readdir, access } from 'node:fs/promises';
+import { readFile, mkdir, writeFile, realpath, readdir, access, lstat } from 'node:fs/promises';
 import { constants } from 'node:fs';
-import { resolve, dirname, join, basename, delimiter, isAbsolute } from 'node:path';
+import { resolve, relative, dirname, join, basename, delimiter, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sha256, sourceIdentity, contained } from './freshness.js';
 import { PHASE, PHASE_PATH, GROUPS, IMAGE_SCENARIOS, NATIVE_SUPPLEMENTS, SOURCE_PATHS, FIXTURE_PATHS } from './scenarios.js';
@@ -53,6 +53,17 @@ function equal(a, b) { return canonicalJson(a) === canonicalJson(b); }
 function prefixed(bytes) { return `sha256:${sha256(bytes)}`; }
 function idsEqual(values, required) {
     return values.length === required.length && new Set(values).size === values.length && [...values].sort().join('\0') === [...required].sort().join('\0');
+}
+async function absent(path) {
+    try {
+        await lstat(path);
+        return false;
+    }
+    catch (error) {
+        if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT')
+            return true;
+        throw error;
+    }
 }
 async function locateApprovedPython() {
     for (const entry of (process.env['PATH'] ?? '').split(delimiter)) {
@@ -114,7 +125,16 @@ async function collect(options) {
     const waypoint = await capture('waypoint', join(root, '.kbd-orchestrator/current-waypoint.json'));
     if (obj(waypoint.value).activePhaseId !== PHASE)
         throw new Error('WRONG_ACTIVE_UAR_PHASE');
-    const inventoryCapture = await capture('inventory03', join(root, PHASE_PATH, 'implementation-inventory-20261016-03.json'));
+    const historicalInventoryCapture = await capture('inventory03', join(root, PHASE_PATH, 'implementation-inventory-20261016-03.json'));
+    const historicalInventory = obj(historicalInventoryCapture.value);
+    const inventoryPath = options.inventory === undefined ? historicalInventoryCapture.original
+        : await realpath(resolve(root, options.inventory.path));
+    if (!contained(join(root, PHASE_PATH), inventoryPath))
+        throw new Error('INVENTORY_PATH_ESCAPES_PHASE');
+    const inventoryCapture = await capture('inventory', inventoryPath);
+    if (options.inventory !== undefined && (!/^[a-f0-9]{64}$/.test(options.inventory.sha256)
+        || inventoryCapture.source.sha256 !== options.inventory.sha256))
+        throw new Error('INVENTORY_REFERENCE_DIGEST_MISMATCH');
     const inventory = obj(inventoryCapture.value);
     const ledgerCapture = await capture('ledger', join(root, PHASE_PATH, 'execution-ledger.json'));
     const ledger = obj(ledgerCapture.value);
@@ -141,17 +161,28 @@ async function collect(options) {
     const tasks = arr(ledger.tasks).map(obj).filter(task => task.kind === 'implementation');
     const itemIds = items.map(item => str(item.stable_id));
     const ledgerIds = tasks.map(task => str(task.stable_id));
-    if (!idsEqual(itemIds, ledgerIds))
+    if (new Set(itemIds).size !== itemIds.length || new Set(ledgerIds).size !== ledgerIds.length
+        || itemIds.some(id => !ledgerIds.includes(id)))
         throw new Error('INVENTORY_LEDGER_ITEM_SET_MISMATCH');
-    if (items.length !== 19 || inventory.implementation_item_count !== 17)
-        throw new Error('ADOPTION_MAP_REQUIRES_REVISION');
-    const approvedGroups = arr(obj(ledger.validation_scope).groups).map(str);
+    if (inventory.phase !== PHASE || ledger.phase !== PHASE)
+        throw new Error('WRONG_INVENTORY_OR_LEDGER_PHASE');
+    const exactItemSet = idsEqual(itemIds, ledgerIds);
+    if (arr(historicalInventory.items).length !== 19 || historicalInventory.implementation_item_count !== 17)
+        throw new Error('HISTORICAL_RECONCILIATION_REQUIRES_REVISION');
+    const validationScope = obj(ledger.validation_scope);
+    const approvedGroups = arr(validationScope.groups).map(str);
     if (!equal(approvedGroups, GROUPS))
         throw new Error('UNAPPROVED_GROUP_SCOPE');
     const itemFiles = [];
     const seenFiles = new Map();
     const itemAssertions = [];
-    for (const item of items) {
+    for (const task of tasks) {
+        const id = str(task.stable_id);
+        const item = items.find(item => item.stable_id === id);
+        if (item === undefined) {
+            itemAssertions.push({ id, passed: false, files: [] });
+            continue;
+        }
         const files = arr(item.files).map(obj);
         let passed = item.implemented === true && arr(item.unresolved).length === 0 && files.length > 0;
         for (const file of files) {
@@ -175,6 +206,9 @@ async function collect(options) {
     const sourceTree = await sourceIdentity(root, SOURCE_PATHS);
     const fixtureTree = await sourceIdentity(root, FIXTURE_PATHS);
     const currentTrees = sourceTree === inventory.source_tree && fixtureTree === inventory.fixture_tree;
+    const implementationComplete = ledger.boundary === 'open' && validationScope.boundary === 'open'
+        && inventory.implementation_complete === true
+        && inventory.boundary === 'open' && exactItemSet && currentTrees && itemAssertions.every(item => item.passed);
     const inputs = options.receipts ? [...options.receipts] : [];
     if (options.receipts === undefined) {
         const gates = join(root, PHASE_PATH, 'evidence/gates');
@@ -184,18 +218,35 @@ async function collect(options) {
         }
     }
     const receipts = [];
+    const pending = [];
     for (const [index, input] of inputs.entries()) {
         const manifestCapture = await capture(`manifest-${index}`, resolve(input.manifest));
-        const receiptCapture = await capture(`receipt-${index}`, resolve(input.receipt));
         const manifest = obj(manifestCapture.value);
-        const receipt = obj(receiptCapture.value);
         await preserveParent(manifest);
-        await preserveParent(receipt);
         const invRef = obj(manifest.implementation_inventory);
         const invRaw = await capture(`receipt-inventory-${index}`, str(invRef.path));
         const boundInventory = obj(invRaw.value);
         const image = str(manifest.image);
         const platform = str(manifest.platform);
+        const inventoryCurrent = implementationComplete && invRef.digest === `sha256:${inventoryCapture.source.sha256}`
+            && manifest.source_tree === inventory.source_tree && manifest.fixture_tree === inventory.fixture_tree && currentTrees;
+        const receiptPath = resolve(input.receipt);
+        if (await absent(receiptPath)) {
+            const current = inventoryCurrent && manifest.schema_version === 1 && manifest.phase === PHASE && manifest.version === '1.1.1'
+                && manifest.stage === 'local' && manifest.source_commit === inventory.source_commit
+                && prefixed(invRaw.bytes) === invRef.digest && boundInventory.source_tree === manifest.source_tree
+                && boundInventory.fixture_tree === manifest.fixture_tree && ['linux/arm64', 'linux/amd64'].includes(platform)
+                && !image.includes('@') && idsEqual(list(manifest.groups).map(str), GROUPS)
+                && isAbsolute(str(manifest.evidence_root)) && receiptPath === join(str(manifest.evidence_root), 'receipt.json');
+            pending.push({ manifest, manifestSource: manifestCapture.source, originalManifest: manifestCapture.original,
+                originalReceipt: receiptPath, current });
+            continue;
+        }
+        // Only absent files are pending. A present malformed, unreadable or changing
+        // receipt is never replaced with an invented missing observation.
+        const receiptCapture = await capture(`receipt-${index}`, receiptPath);
+        const receipt = obj(receiptCapture.value);
+        await preserveParent(receipt);
         let identityValid = manifest.schema_version === 1 && manifest.phase === PHASE && manifest.version === '1.1.1'
             && prefixed(invRaw.bytes) === invRef.digest && boundInventory.source_tree === manifest.source_tree
             && boundInventory.fixture_tree === manifest.fixture_tree
@@ -206,9 +257,6 @@ async function collect(options) {
         identityValid = identityValid && artifact.platform === platform && /^sha256:[a-f0-9]{64}$/.test(typeof artifact.image_id === 'string' ? artifact.image_id : '');
         if (manifest.stage === 'local')
             identityValid = identityValid && !image.includes('@');
-        const current = invRef.digest === `sha256:${inventoryCapture.source.sha256}`
-            && manifest.source_tree === inventory.source_tree && manifest.fixture_tree === inventory.fixture_tree
-            && manifest.source_commit === inventory.source_commit && currentTrees;
         const rawArtifacts = [];
         let rawValid = false;
         const hashesPath = join(dirname(receiptCapture.original), 'hashes.json');
@@ -257,6 +305,10 @@ async function collect(options) {
                 });
             identityValid = identityValid && publicationValid;
         }
+        // Local acceptance freezes an uncommitted candidate at the inventory's
+        // baseline commit. Publication later binds its actual tag/workflow commit.
+        const current = inventoryCurrent && (manifest.stage === 'local'
+            ? manifest.source_commit === inventory.source_commit : publicationValid);
         const groups = list(manifest.groups).map(str);
         const complete = receipt.status === 'passed' && receipt.exit_code === 0 && typeof receipt.finished_at === 'number'
             && receipt.finished_at <= Date.now() / 1000 && !receipt.cleanup_error && idsEqual(groups, GROUPS)
@@ -271,12 +323,20 @@ async function collect(options) {
             originalManifest: manifestCapture.original, originalReceipt: receiptCapture.original,
             current, identityValid, rawValid, complete, rawArtifacts, publication, publicationValid });
     }
+    const publicationIdentities = new Set(receipts.filter(receipt => receipt.current && receipt.publicationValid)
+        .map(receipt => canonicalJson({ source_commit: receipt.manifest.source_commit,
+        index_digest: receipt.manifest.index_digest,
+        receipt_digest: obj(receipt.manifest.publication_receipt).digest })));
+    if (publicationIdentities.size > 1)
+        throw new Error('CONFLICTING_PUBLICATION_IDENTITIES');
     const runnerExecutable = await locateApprovedPython();
     const actions = [];
     for (const stage of ['local', 'published-arm64', 'published-amd64']) {
         const manifestName = stage === 'local' ? 'local.json' : stage === 'published-arm64' ? 'arm64.json' : 'amd64.json';
         const expectedPath = resolve(root, PHASE_PATH, 'evidence/gates', manifestName);
-        const candidate = receipts.find(receipt => receipt.current && receipt.originalManifest === expectedPath);
+        const candidate = receipts.find(receipt => receipt.current && receipt.originalManifest === expectedPath
+            && idsEqual(list(receipt.manifest.groups).map(str), GROUPS))
+            ?? pending.find(manifest => manifest.current && manifest.originalManifest === expectedPath);
         if (!candidate)
             continue;
         actions.push({ id: `uar-${stage}-acceptance`, kind: 'gate', stage, executable: runnerExecutable,
@@ -285,6 +345,9 @@ async function collect(options) {
                 ...GROUPS.flatMap(group => IMAGE_SCENARIOS[group].map(scenario => `${stage}-${scenario}`)),
                 ...(stage === 'local' ? NATIVE_SUPPLEMENTS.map(supplement => `native-${supplement.case}`) : [])] });
     }
+    const unobservedStages = new Set(pending.filter(manifest => manifest.current
+        && manifest.originalManifest === resolve(root, PHASE_PATH, 'evidence/gates/local.json')
+        && !receipts.some(receipt => receipt.current && receipt.manifest.stage === 'local')).map(() => 'local'));
     let active = null;
     if (options.activeOperationObservation !== undefined) {
         const observationCapture = await capture('active-operation-observation', resolve(options.activeOperationObservation));
@@ -327,13 +390,20 @@ async function collect(options) {
     const adoptionMap = {
         schema_version: 1, phase: PHASE, status: 'proposed_requires_explicit_operator_adoption',
         adoption_reference: options.adoptionReference ?? null,
-        inventory_sha256: inventoryCapture.source.sha256, original_count: inventory.implementation_item_count,
-        derived_count: items.length, item_ids: itemIds, scope_authority: 'plan Execute scope correction and ledger validation_scope',
+        inventory_path: relative(root, inventoryCapture.original), inventory_sha256: inventoryCapture.source.sha256,
+        original_count: inventory.implementation_item_count,
+        derived_count: tasks.length, item_ids: ledgerIds, inventory_item_ids: itemIds,
+        missing_inventory_item_ids: ledgerIds.filter(id => !itemIds.includes(id)),
+        ledger_boundary: ledger.boundary, validation_scope_boundary: validationScope.boundary ?? null,
+        implementation_complete: implementationComplete,
+        historical_inventory: { path: relative(root, historicalInventoryCapture.original), sha256: historicalInventoryCapture.source.sha256,
+            original_count: historicalInventory.implementation_item_count, listed_count: arr(historicalInventory.items).length },
+        scope_authority: 'plan Execute scope correction and exact ledger implementation set and validation_scope',
         original_L3: items.find(item => item.stable_id === 'L3')?.required_deliverable ?? null,
         adopted_groups: [...GROUPS], image_scenarios: IMAGE_SCENARIOS,
         native_supplements: NATIVE_SUPPLEMENTS,
         resolutions: [
-            'Derive implementation count from the exact inventory items and match the ledger implementation set. Do not rewrite original count17.',
+            'Derive current implementation criteria from the exact ledger set. Missing inventory rows remain pending. Retain historical inventory03 count17/list19 without applying those fixed counts to later inventories.',
             'Use six approved phase groups; obsolete seven-group L3 prose is retained as history, not an additional Kubo gate.',
             'Require all76 exact image scenarios for local and each published architecture, plus4 local native supplements. A single repaired group cannot establish a whole-stage pass.',
             'Preserve original review rounds and their actual source/provenance; cap exhausted. R8 was not independently rereviewed. No third review is authorized.',
@@ -342,16 +412,24 @@ async function collect(options) {
     };
     const warnings = [
         'Draft only: an explicit operator adoption record must approve this exact mapping and contract digest.',
-        'Qualified supervisor remains unavailable; mandatory acceptance and release remain blocked.',
+        'Qualified supervisor readiness requires retained current artifact-bound positive proof; missing proof blocks release. Both published whole programs remain independently mandatory.',
         'Original corrective review used weaker native fallback; canonical producer identity and distinct-family independence were not proven. R8 source is outside its reviewed tree.',
-        'Imported receipts are historical snapshots. A started receipt is not a passing result. Recollect after the active UAR run finishes.',
+        'Imported receipts are immutable snapshots. Started, failed and superseded receipts never prove current acceptance.',
     ];
     const snapshot = {
         schema_version: 1, root, source_paths: [...SOURCE_PATHS], fixture_paths: [...FIXTURE_PATHS],
-        source_tree: inventory.source_tree, fixture_tree: inventory.fixture_tree,
+        source_tree: sourceTree, fixture_tree: fixtureTree,
+        inventory_source_tree: inventory.source_tree, inventory_fixture_tree: inventory.fixture_tree,
         observed_source_tree: sourceTree, observed_fixture_tree: fixtureTree, item_files: itemFiles,
-        inventory_path: `${PHASE_PATH}/implementation-inventory-20261016-03.json`,
+        inventory_path: relative(root, inventoryCapture.original),
         item_assertions: itemAssertions, inventory_sha256: inventoryCapture.source.sha256,
+        ledger_boundary: ledger.boundary, validation_scope_boundary: validationScope.boundary ?? null,
+        implementation_complete: implementationComplete,
+        authority_sources: [waypoint, ledgerCapture].map(item => ({ path: item.original, sha256: item.source.sha256 })),
+        pending_manifests: pending.map(manifest => ({ original_manifest: manifest.originalManifest,
+            manifest_sha256: manifest.manifestSource.sha256, original_receipt: manifest.originalReceipt,
+            manifest_current: manifest.current, receipt_observation: 'absent' })),
+        unobserved_stages: [...unobservedStages],
         active_operation: active === null ? null : { observation_sha256: active.observationSource.sha256,
             observed_at: active.observedAt, operation: active.operation, original_receipt: active.receipt.originalReceipt,
             receipt_sha256: active.receipt.receiptSource.sha256, manifest_sha256: active.receipt.manifestSource.sha256 },
@@ -360,7 +438,8 @@ async function collect(options) {
             manifest_sha256: receipt.manifestSource.sha256, receipt_sha256: receipt.receiptSource.sha256,
             source_tree: receipt.receipt.source_tree ?? null, fixture_tree: receipt.receipt.fixture_tree ?? null,
             status: receipt.receipt.status ?? null, current: receipt.current, identity_valid: receipt.identityValid,
-            raw_valid: receipt.rawValid, all_groups_complete: receipt.complete, raw_artifacts: receipt.rawArtifacts,
+            raw_valid: receipt.rawValid, all_groups_complete: receipt.complete,
+            supervisor_qualification: hasSupervisorProof(receipt), raw_artifacts: receipt.rawArtifacts,
         })), warnings,
     };
     const assertions = {};
@@ -370,12 +449,12 @@ async function collect(options) {
         criteria.push({ id, stage, description, source_id: source, depends_on: [], expected_outcome: description,
             predicate: { kind: 'json_equals', pointer: `/${id}/passed`, expected: true } });
     }
-    criterion('inventory-boundary', 'implementation', 'Inventory03 complete and exact current production/fixture trees match the frozen inventory.', 'inventory03', inventory.implementation_complete === true && inventory.boundary === 'open' && currentTrees);
-    criterion('adoption-map', 'implementation', 'Operator explicitly references adoption of the19-item/six-group mapping; Rust adoption of the exact contract is additionally mandatory.', 'plan', typeof options.adoptionReference === 'string' && options.adoptionReference.trim().length > 0);
+    criterion('inventory-boundary', 'implementation', 'Current ledger and validation-scope boundaries are both open, every exact ledger implementation item is inventoried and complete, and current production/fixture bytes match the selected inventory.', 'inventory', implementationComplete);
+    criterion('adoption-map', 'implementation', 'Operator explicitly references adoption of the exact ledger-item/six-group mapping; Rust adoption of the exact contract is additionally mandatory.', 'plan', typeof options.adoptionReference === 'string' && options.adoptionReference.trim().length > 0);
     for (const item of itemAssertions)
-        criterion(`implementation-${item.id}`, 'implementation', `All ${item.id} deliverable files match their inventory03 hashes.`, 'inventory03', item.passed);
+        criterion(`implementation-${item.id}`, 'implementation', `All ${item.id} deliverable files are present in the selected inventory and match its hashes.`, 'inventory', item.passed);
     criterion('review-history', 'review', 'Retain original two review rounds, corrective dispositions and exhausted cap; this does not certify R8 or stronger judge independence.', 'plan', obj(review1.value).round === 1 && obj(review2.value).round === 2 && obj(review2.value).verdict === 'PASS'
-        && typeof inventory.verification_note === 'string' && inventory.verification_note.includes('no new review claimed'));
+        && typeof historicalInventory.verification_note === 'string' && historicalInventory.verification_note.includes('no new review claimed'));
     if (active !== null)
         criteria.push({ id: 'local-runner-operation', stage: 'local-operation',
             description: 'The already-approved existing local acceptance runner is observed running by the trusted native host; wait without restarting it.',
@@ -411,8 +490,12 @@ async function collect(options) {
     }
     const publicationPass = receipts.some(receipt => receipt.current && receipt.identityValid && receipt.rawValid && receipt.publicationValid);
     criterion('publication-provenance', 'artifact-publication', 'Annotated tag, source, workflow run/attempt and both exported child digests match the immutable index as observed by the published runner.', 'acceptance-source', publicationPass);
-    assertions['qualified-supervisor'] = { available: false, reason: 'Genuine isolated qualified supervisor setup unavailable in the adopted source inventory; new evidence and explicit revision are required.' };
-    criteria.push({ id: 'qualified-supervisor', stage: 'release', description: 'Genuine qualified supervisor positive proof remains mandatory and unavailable. No production mutation or fabricated qualification.', source_id: 'issue385', depends_on: [], expected_outcome: 'Genuine isolated qualified supervisor positive acceptance is available and hash-bound to both accepted published images.', predicate: { kind: 'external_ready', pointer: '/qualified-supervisor/available' } });
+    const supervisorProof = receipts.filter(candidate => candidate.current && candidate.identityValid && candidate.rawValid
+        && hasSupervisorProof(candidate)).map(candidate => ({ receipt_sha256: candidate.receiptSource.sha256, image: str(candidate.manifest.image),
+        platform: str(candidate.manifest.platform), stage: str(candidate.manifest.stage) }));
+    assertions['qualified-supervisor'] = { available: supervisorProof.length > 0,
+        artifact_proof: supervisorProof, reason: 'Readiness requires a current hash-valid local or published receipt with passing recovery qualification, identity and physical exclusion digests. Both published whole programs remain separately required.' };
+    criteria.push({ id: 'qualified-supervisor', stage: 'release', description: 'Genuine qualified supervisor positive proof is mandatory and must bind the current artifact. Both published whole-program criteria remain mandatory.', source_id: 'issue385', depends_on: [], expected_outcome: 'Genuine isolated qualified supervisor positive acceptance is available and hash-bound to a current candidate artifact; publication acceptance independently proves both children.', predicate: { kind: 'external_ready', pointer: '/qualified-supervisor/available' } });
     criterion('release-readback', 'release', 'GitHub release readback binds both accepted child receipts and exact source/index identities.', 'ledger', false);
     const releaseCriterion = criteria.find(item => item.id === 'release-readback');
     if (releaseCriterion)
@@ -453,12 +536,12 @@ async function collect(options) {
         jev: { model: 'jev-1.14.0', rubric_version: 'phase-exit-v1', support_threshold: 0.95, contradiction_threshold: 0.05 },
         conflicts: [
             { id: 'inventory-count17-vs19', criterion_ids: ['inventory-boundary', 'adoption-map'], source_id: 'plan',
-                resolution: 'Adopt all19 explicit inventory items matching the ledger implementation set; retain original numeric17 unchanged as stale historical metadata.' },
+                resolution: 'Retain historical inventory03 count17/list19 unchanged. Adopt the exact current ledger implementation set; missing selected-inventory rows remain pending and never open the boundary.' },
             { id: 'obsolete-seven-vs-approved-six', criterion_ids: ['adoption-map', 'local-whole-program', 'published-arm64-whole-program', 'published-amd64-whole-program'], source_id: 'plan',
                 resolution: 'Adopt the six groups in the operator Execute scope correction and ledger validation_scope. Preserve obsolete L3 seven-group prose in the raw inventory.' },
         ],
         identity: { repository: 'Prometheus-AGS/universal-agent-runtime', phase: PHASE, version: '1.1.1', source_commit: str(inventory.source_commit),
-            source_tree: str(inventory.source_tree), fixture_tree: str(inventory.fixture_tree),
+            source_tree: sourceTree, fixture_tree: fixtureTree,
             inventory_sha256: inventoryCapture.source.sha256, snapshot_sha256: snapshotSource.sha256 },
         sources, stages: [
             { id: 'implementation', kind: 'implementation', depends_on: [] },
@@ -475,7 +558,8 @@ async function collect(options) {
     };
     const contractDigest = sha256(canonicalJson(contract));
     const now = Math.floor(Date.now() / 1000);
-    const evidence = { schema_version: 1, contract_digest: contractDigest, records: criteria.map(item => ({
+    const evidence = { schema_version: 1, contract_digest: contractDigest,
+        records: criteria.filter(item => !unobservedStages.has(item.stage)).map(item => ({
             id: `${item.id}-${contractDigest.slice(0, 16)}`, criterion_id: item.id, contract_digest: contractDigest,
             identity: contract.identity,
             artifact_path: item.id === 'local-runner-operation' && active !== null ? active.receipt.receiptSource.path : assertionSource.path,
@@ -491,6 +575,9 @@ async function collect(options) {
     for (const item of captured)
         if (sha256(await readFile(item.original)) !== item.source.sha256)
             throw new Error('INPUT_CHANGED_DURING_COLLECTION');
+    for (const manifest of pending)
+        if (!await absent(manifest.originalReceipt))
+            throw new Error('PENDING_RECEIPT_APPEARED_DURING_COLLECTION');
     if (await sourceIdentity(root, SOURCE_PATHS) !== sourceTree || await sourceIdentity(root, FIXTURE_PATHS) !== fixtureTree)
         throw new Error('SOURCE_CHANGED_DURING_COLLECTION');
     if (active !== null && active.operation.expires_at <= Math.floor(Date.now() / 1000))
@@ -503,11 +590,20 @@ async function collect(options) {
         await writeFile(join(output, name), data, { flag: 'wx', mode: 0o600 });
     return { contract: join(output, 'contract.draft.json'), evidence: join(output, 'evidence.json'),
         adoptionMap: join(output, 'adoption-map.json'), snapshot: snapshotSource.path, contractDigest,
-        status: 'draft_requires_operator_adoption', implementationItems: items.length,
+        status: 'draft_requires_operator_adoption', implementationItems: tasks.length,
         imageScenarios: GROUPS.reduce((count, group) => count + IMAGE_SCENARIOS[group].length, 0), nativeSupplements: NATIVE_SUPPLEMENTS.length, warnings };
 }
 function objOrEmptyGroup(receipt, group) {
     return optionalObject(optionalObject(receipt.receipt.groups)[group]);
+}
+function hasSupervisorProof(receipt) {
+    const recovery = objOrEmptyGroup(receipt, 'recovery');
+    const row = list(optionalObject(recovery.result).scenarios).map(obj)
+        .find(row => row.id === 'qualified_supervisor_reclaim_controls');
+    const observations = optionalObject(row?.observations);
+    return recovery.status === 'passed' && row?.status === 'passed'
+        && ['qualification_digest', 'identity_digest', 'physical_exclusion_digest']
+            .every(key => typeof observations[key] === 'string' && /^sha256:[a-f0-9]{64}$/.test(str(observations[key])));
 }
 function hasObservations(value) {
     return (Array.isArray(value) && value.length > 0)

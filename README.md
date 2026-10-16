@@ -128,6 +128,14 @@ with its evidence and continue the original phase. Changes to the contract's
 semantics, evidence requirements, model, thresholds or mandatory hooks require an
 explicitly adopted amendment. A code repair must not silently add release scope.
 
+The UAR repair continuation accepts an explicit inventory path and SHA-256;
+it derives implementation IDs from the approved ledger and retains the original
+19-item/17-count discrepancy as history. A closed repair boundary cannot credit
+an old inventory or receipt as current acceptance. This adapter revision is
+authored; compiled packages and its affected real-import acceptance are pending
+the complete repair boundary. The previously published preview retains its own
+earlier acceptance receipts. See [the adapter contract](docs/uar-adapter.md).
+
 The original failure, reviewed proposal and separate adoption record remain in
 history. Publishing this preview makes the tool usable for this process; it does
 not certify Phase Exit or UAR while their required gates remain incomplete.

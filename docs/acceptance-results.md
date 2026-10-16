@@ -93,3 +93,16 @@ Phase Exit's scoped first pass is complete. UAR v1.1.1 remains incomplete: the
 original acceptance operation is nonterminal, its complete failure cohort is not
 available, and genuine qualified-supervisor evidence is still missing. No UAR
 source, candidate, production resource, tag or published release was changed.
+
+## UAR dogfood repair — 2026-10-16
+
+Whole authoring inventories UAR05 and Phase Exit08 preceded the first affected
+compiler gate. One TS2322 cohort was corrected in full and source inventory09
+recorded before rerun. The compiler and five-package generation exited0. The
+sole affected real-uar-import case passed against real UAR inventory05 with the
+original hash-bound v2 calibration proof; JEV was not resampled. The actual fresh
+missing-receipt local decision is CONTINUE with uar-local-acceptance; release is
+BLOCKED and phase_complete=false. Original failure and scoped passing receipts
+are in .phase-exit/acceptance/repair6-*.json. This does not certify UAR or repeat
+unchanged native host coverage. The acceptance-state adoption is not live UAR
+operator adoption.

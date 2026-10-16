@@ -542,16 +542,44 @@ await one("real-uar-import", async () => {
   const phase = join(uar, ".kbd-orchestrator", "phases", "uar-outstanding-issues-v1-1-1");
   const manifest = join(phase, "evidence", "gates", "local.json");
   const manifestValue = object(JSON.parse(await readFile(manifest, "utf8")));
-  const imported = await importUarSnapshot({ root: uar, output: join(output, "uar-snapshot"), receipts: [{ manifest, receipt: join(text(manifestValue["evidence_root"]), "receipt.json") }], adoptionReference: adoptionAuthority });
+  const inventoryPath = process.env.PHASE_EXIT_UAR_INVENTORY ?? join(phase, "implementation-inventory-20261016-03.json");
+  const inventory = { path: inventoryPath, sha256: hash(await readFile(inventoryPath)) };
+  const imported = await importUarSnapshot({ root: uar, output: join(output, "uar-snapshot"), inventory, receipts: [{ manifest, receipt: join(text(manifestValue["evidence_root"]), "receipt.json") }], adoptionReference: adoptionAuthority });
   expect(imported.ok, imported.ok ? "" : imported.error.code);
   if (!imported.ok) return;
-  expect(imported.value.implementationItems === 19 && imported.value.imageScenarios === 76 && imported.value.nativeSupplements === 4, "UAR count reconciliation differs from approved scope");
+  const ledger = object(JSON.parse(await readFile(join(phase, "execution-ledger.json"), "utf8")));
+  const implementationIds = array(ledger["tasks"]).map(object).filter(task => task["kind"] === "implementation").map(task => text(task["stable_id"]));
+  expect(new Set(implementationIds).size === implementationIds.length && imported.value.implementationItems === implementationIds.length && imported.value.imageScenarios === 76 && imported.value.nativeSupplements === 4, "UAR count reconciliation differs from the exact approved ledger scope");
   expect(GROUPS.length === 6 && NATIVE_SUPPLEMENTS.length === 4 && GROUPS.reduce((n, group) => n + IMAGE_SCENARIOS[group].length, 0) === 76, "UAR adapter exported a different scope");
   const f: Fixture = { dir: join(output, "uar-snapshot"), state: join(output, "uar-state"), contractPath: imported.value.contract, evidencePath: imported.value.evidence, digest: imported.value.contractDigest, contract: object(JSON.parse(await readFile(imported.value.contract, "utf8"))), evidence: object(JSON.parse(await readFile(imported.value.evidence, "utf8"))) };
+  const rejectedInventory = await importUarSnapshot({ root: uar, output: join(output, "uar-rejected-inventory"), inventory: { ...inventory, sha256: "0".repeat(64) }, receipts: [] });
+  expect(!rejectedInventory.ok && rejectedInventory.error.code === "INVENTORY_REFERENCE_DIGEST_MISMATCH", "Explicit inventory digest mismatch did not stop collection");
+  if (ledger["boundary"] !== "open" || object(ledger["validation_scope"])["boundary"] !== "open") {
+    const snapshot = object(JSON.parse(await readFile(imported.value.snapshot, "utf8")));
+    expect(snapshot["implementation_complete"] === false && array(snapshot["receipts"]).map(object).every(row => row["current"] === false), "Closed repair boundary accepted a historical inventory or receipt as current");
+  }
   await adopt(f, null, [], { reviewer: "phase-exit-import-mapping-conformance", reviewRationale: "Check imported artifact identity and operator-approved mapping conformance only; this is not another UAR source review and does not expand its review cap or scope.", operator: "gqadonis", rationale: adoptionAuthority });
+  const pendingSnapshot = object(JSON.parse(await readFile(imported.value.snapshot, "utf8")));
+  const pendingLocal = array(pendingSnapshot["pending_manifests"] ?? []).map(object).some(row => row["original_manifest"] === manifest && row["manifest_current"] === true && row["receipt_observation"] === "absent");
+  const localOriginalAbsent = await lstat(join(text(manifestValue["evidence_root"]), "receipt.json")).then(() => false, (error: unknown) => {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT") return true;
+    throw error;
+  });
+  if (localOriginalAbsent && pendingSnapshot["implementation_complete"] === true && object(manifestValue["implementation_inventory"])["digest"] === `sha256:${inventory.sha256}`) expect(pendingLocal, "Fresh canonical manifest with absent original receipt was not retained as pending");
+  if (pendingLocal) {
+    expect(!array(pendingSnapshot["receipts"]).map(object).some(row => row["original_manifest"] === manifest), "Missing original receipt became a fabricated runtime observation");
+    const localDecision = await evaluate(f, "local");
+    verdict(localDecision, "CONTINUE");
+    expect(object(localDecision["next_authorized_action"])["id"] === "uar-local-acceptance" && localDecision["phase_complete"] === false, "Fresh canonical local collection gate was not authorized exactly");
+    expect(!array(f.evidence["records"]).map(object).some(row => text(row["criterion_id"]).startsWith("local-") || text(row["criterion_id"]).startsWith("native-")), "Unobserved local acceptance was represented as observed evidence");
+    await jsonFile(join(output, "uar-pending-local-decision.json"), localDecision);
+  }
   const d = await evaluate(f, "release");
   expect(d["phase_complete"] === false, "Incomplete real UAR phase was certified");
-  expect(array(d["unmet_criteria"]).includes("qualified-supervisor"), "Mandatory external qualification disappeared from UAR decision");
+  expect(array(f.contract["criteria"]).map(object).some(criterion => criterion["id"] === "qualified-supervisor"), "Mandatory external qualification disappeared from the UAR contract");
+  const evidenceSnapshot = object(JSON.parse(await readFile(imported.value.snapshot, "utf8")));
+  const supervisorReady = array(evidenceSnapshot["receipts"]).map(object).some(receipt => receipt["current"] === true && receipt["identity_valid"] === true && receipt["raw_valid"] === true && receipt["supervisor_qualification"] === true);
+  expect(array(d["unmet_criteria"]).includes("qualified-supervisor") === !supervisorReady, "Supervisor decision disagrees with retained current physical qualification evidence");
   await jsonFile(join(output, "uar-decision.json"), d);
 });
 
